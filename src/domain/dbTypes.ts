@@ -11,6 +11,8 @@ export type CardID = `crd_${string}`;
 // }
 
 interface TransactionBase {
+  leagueID: LeagueID;
+  description: string;
   createdAt: Date;
   leagueMemberID: LeagueMemberID;
 }

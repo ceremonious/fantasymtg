@@ -1,7 +1,7 @@
 import { CardPrice } from "@prisma/client";
 import { assertNever, setToNoon } from "../utils/tsUtil";
 import { CardID, LeagueMemberID, Transaction } from "./dbTypes";
-import { Portfolio } from "./miscTypes";
+import { NetWorthOverTime, Portfolio } from "./miscTypes";
 import addDays from "date-fns/addDays";
 
 function updatePortfolio(
@@ -122,11 +122,6 @@ function netWorthArrToMap(
   }
   return netWorthMap;
 }
-
-type NetWorthOverTime = {
-  timestamp: Date;
-  netWorths: Record<LeagueMemberID, number>;
-}[];
 
 export function calculateNetWorthOverTime(params: {
   startDate: Date;

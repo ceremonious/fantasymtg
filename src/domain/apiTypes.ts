@@ -1,8 +1,11 @@
-import { LeagueMember } from "@prisma/client";
+import { Card, League, LeagueMember } from "@prisma/client";
 import { LeagueMemberID } from "./dbTypes";
-import { Portfolio } from "./miscTypes";
+import { NetWorthOverTime, Portfolio } from "./miscTypes";
 
 export interface GetLeagueHomePage {
-  members: Pick<LeagueMember, "id" | "displayName">[];
+  league: Pick<League, "name">;
+  members: Pick<LeagueMember, "id" | "displayName" | "isOwner">[];
   portfolios: Map<LeagueMemberID, Portfolio>;
+  netWorthOverTime: NetWorthOverTime;
+  cards: (Card & { amount: number })[];
 }
