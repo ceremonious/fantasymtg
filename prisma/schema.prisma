@@ -14,13 +14,13 @@ model Example {
     id String @id @default(cuid())
 }
 
-model Account {
-    id String @id @default(cuid())
-    phoneNumber String
-    createdAt DateTime
+// model Account {
+//     id String @id @default(cuid())
+//     phoneNumber String
+//     createdAt DateTime
 
-    leagueMember LeagueMember[]
-}
+//     leagueMember LeagueMember[]
+// }
 
 model League {
     id String @id @default(cuid())
@@ -41,7 +41,7 @@ model LeagueMember {
     isOwner Boolean
     createdAt DateTime
 
-    account   Account @relation(fields: [accountID], references: [id])
+    // account   Account @relation(fields: [accountID], references: [id])
     leauge    League @relation(fields: [leagueID], references: [id])
 
     transactions Transaction[]
