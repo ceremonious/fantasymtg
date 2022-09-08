@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { supabase } from '../utils/supabaseClient';
+import { useState } from "react";
+import { supabase } from "../utils/supabaseClient";
 
 export default function Auth() {
-  const [phone, setPhone] = useState('')
+  const [phone, setPhone] = useState("");
 
   const handleLogin = async (phone: string) => {
     console.log(phone);
-    const resp = await supabase.auth.signInWithOtp({phone})
-    console.log(resp)
-  }
+    const resp = await supabase.auth.signInWithOtp({ phone });
+    console.log(resp);
+  };
 
   return (
     <div className="row flex-center flex">
@@ -25,11 +25,12 @@ export default function Auth() {
             onChange={(e) => setPhone(e.target.value)}
           />
         </div>
+
         <div>
           <button
             onClick={(e) => {
-              e.preventDefault()
-              handleLogin(phone)
+              e.preventDefault();
+              handleLogin(phone);
             }}
             className="button block"
           >
@@ -38,5 +39,5 @@ export default function Auth() {
         </div>
       </div>
     </div>
-  )
+  );
 }

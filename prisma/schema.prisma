@@ -13,3 +13,70 @@ datasource db {
 model Example {
     id String @id @default(cuid())
 }
+
+model Account {
+    id String @id @default(cuid())
+    phoneNumber String
+    createdAt DateTime
+
+    leagueMember LeagueMember[]
+}
+
+model League {
+    id String @id @default(cuid())
+    name String
+    createdAt DateTime
+    startDate DateTime
+    startingAmount Int
+
+    leagueMember LeagueMember[]
+    transactions Transaction[]
+}
+
+model LeagueMember {
+    id String @id @default(cuid())
+    displayName String
+    accountID String
+    leagueID String
+    isOwner Boolean
+    createdAt DateTime
+
+    account   Account @relation(fields: [accountID], references: [id])
+    leauge    League @relation(fields: [leagueID], references: [id])
+
+    transactions Transaction[]
+}
+
+model Card {
+    id String @id @default(cuid())
+    name String
+
+    transactions Transaction[]
+    cardPrices CardPrice[]
+}
+
+model CardPrice {
+    id String @id @default(cuid()) //TOOD: get rid of this
+    cardID String 
+    timestamp DateTime
+    amount Int
+
+    card      Card @relation(fields: [cardID], references: [id])
+}
+
+model Transaction {
+    id String @id @default(cuid())
+    description String
+    createdAt DateTime
+    leagueID String
+    leagueMemberID String
+
+    type String //TODO: should be enum
+    cardID String //TODO: should be nullable
+    amount Int
+    quantity Int
+
+    card      Card @relation(fields: [cardID], references: [id])
+    leauge    League @relation(fields: [leagueID], references: [id])
+    member    LeagueMember @relation(fields: [leagueMemberID], references: [id])
+}
