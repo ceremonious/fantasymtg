@@ -1,4 +1,4 @@
-import { createRouter } from "./context";
+import { createProtectedRouter } from "./context";
 import { z } from "zod";
 import { filterMap, pick } from "../../utils/tsUtil";
 import { ITransaction } from "../../domain/dbTypes";
@@ -81,7 +81,7 @@ TODO -- Endpoints needed:
 - Sell cards
 */
 
-export const stocksRouter = createRouter()
+export const stocksRouter = createProtectedRouter()
   .query("leagueHome", {
     input: z.object({
       leagueID: z.string(),

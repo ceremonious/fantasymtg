@@ -7,12 +7,12 @@ export default function Auth() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [code, setCode] = useState("");
   const [shouldPromptCode, setShouldPromptCode] = useState(false);
-  // const test = trpc.useQuery([
-  //   "stocks.searchCards",
-  //   { searchTerm: "meathook", page: 1 },
-  // ]);
+  const { data, refetch } = trpc.useQuery(
+    ["stocks.searchCards", { searchTerm: "meathook", page: 1 }],
+    { enabled: false }
+  );
 
-  // console.log(test.data, 123);
+  console.log(data, 123);
 
   const onSubmitPhoneNumber = async () => {
     const { error } = await supabase.auth.signInWithOtp({ phone: phoneNumber });
@@ -64,6 +64,18 @@ export default function Auth() {
               <span>Send code</span>
             </button>
           </div>
+
+          <div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                refetch();
+              }}
+              className="button block"
+            >
+              <span>Fetch data</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -93,6 +105,18 @@ export default function Auth() {
               className="button block"
             >
               <span>Send code</span>
+            </button>
+          </div>
+
+          <div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                refetch();
+              }}
+              className="button block"
+            >
+              <span>Fetch data</span>
             </button>
           </div>
         </div>
