@@ -13,6 +13,7 @@ import {
 } from "../../domain/transactions";
 import { Prisma, PrismaClient, Transaction } from "@prisma/client";
 import { GetLeagueHomePage } from "../../domain/apiTypes";
+import * as trpc from "@trpc/server";
 
 type IPrismaClient = PrismaClient<
   Prisma.PrismaClientOptions,
@@ -22,6 +23,30 @@ type IPrismaClient = PrismaClient<
 
 function convertTransactions(transactions: Transaction[]) {
   return transactions as ITransaction[];
+}
+
+async function authenticateLeagueMember(
+  prisma: IPrismaClient,
+  accountID: string,
+  leagueMemberID: string
+) {
+  const leagueMember = await prisma.leagueMember.findFirst({
+    where: { id: leagueMemberID },
+  });
+  if (leagueMember === null) {
+    throw new trpc.TRPCError({
+      code: "BAD_REQUEST",
+      message: "Could not find league member",
+    });
+  }
+  if (leagueMember.accountID !== accountID) {
+    throw new trpc.TRPCError({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+  }
+
+  return leagueMember;
 }
 
 async function getLeagueMemberPortfolio(
@@ -36,7 +61,10 @@ async function getLeagueMemberPortfolio(
     }),
   ]);
   if (league === null) {
-    throw new Error("Could not find league");
+    throw new trpc.TRPCError({
+      code: "BAD_REQUEST",
+      message: "Could not find league",
+    });
   }
   return calculatePortfolio(
     league.startingAmount,
@@ -45,10 +73,7 @@ async function getLeagueMemberPortfolio(
 }
 
 function signJWT(data: CardPriceJWT) {
-  const JWT_SECRET = process.env.JWT_SECRET;
-  if (JWT_SECRET === undefined) {
-    throw new Error("JWT Secret not found");
-  }
+  const JWT_SECRET = process.env.JWT_SECRET ?? "";
   return jwt.sign(data, JWT_SECRET, {
     expiresIn: 60 * 5,
   });
@@ -56,19 +81,22 @@ function signJWT(data: CardPriceJWT) {
 
 export function verifyCardJWT(token: string): CardPriceJWT {
   try {
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (JWT_SECRET === undefined) {
-      throw new Error("JWT Secret not found");
-    }
+    const JWT_SECRET = process.env.JWT_SECRET ?? "";
     const data = jwt.verify(token, JWT_SECRET);
 
     if (typeof data !== "string") {
       return data as CardPriceJWT;
     } else {
-      throw new Error("Unknown error encountered");
+      throw new trpc.TRPCError({
+        code: "BAD_REQUEST",
+        message: "Unable to verify card price",
+      });
     }
   } catch (error) {
-    throw new Error("Unknown error encountered");
+    throw new trpc.TRPCError({
+      code: "BAD_REQUEST",
+      message: "Unable to verify card price",
+    });
   }
 }
 
@@ -97,7 +125,10 @@ export const stocksRouter = createProtectedRouter()
         }),
       ]);
       if (league === null) {
-        throw new Error("Could not find league");
+        throw new trpc.TRPCError({
+          code: "BAD_REQUEST",
+          message: "Could not find league",
+        });
       }
 
       const portfolios = calculateLeaguePortfolios(
@@ -151,7 +182,10 @@ export const stocksRouter = createProtectedRouter()
       const rawPrice = input.cardType === "NORMAL" ? card.usd : card.usd_foil;
       const parsedPrice = parseFloat(rawPrice);
       if (parsedPrice === NaN) {
-        throw new Error("Could not get card price");
+        throw new trpc.TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not get card price",
+        });
       }
       const price = parsedPrice * 100;
 
@@ -235,17 +269,13 @@ export const stocksRouter = createProtectedRouter()
     async resolve({ input, ctx }) {
       /*
       TODO -- Validate the following:
-      - User is authorized for this league member
       - User has not made too many recent transactions 
       */
-
-      const leagueMember = await ctx.prisma.leagueMember.findFirst({
-        where: { id: input.leagueMemberID },
-      });
-      if (leagueMember === null) {
-        //TODO: look into error handling
-        throw new Error("Could not find league member");
-      }
+      const leagueMember = await authenticateLeagueMember(
+        ctx.prisma,
+        ctx.accountID,
+        input.leagueMemberID
+      );
 
       const { id, name, cardType, price } = verifyCardJWT(input.token);
       const totalAmount = price * input.quantity;
@@ -256,7 +286,10 @@ export const stocksRouter = createProtectedRouter()
         leagueMember.id
       );
       if (portfolio.cash < totalAmount) {
-        throw new Error("Insufficient funds");
+        throw new trpc.TRPCError({
+          code: "BAD_REQUEST",
+          message: "Insufficient funds",
+        });
       }
 
       const transaction: ITransaction = {
@@ -292,16 +325,14 @@ export const stocksRouter = createProtectedRouter()
     async resolve({ input, ctx }) {
       /*
       TODO -- Validate the following:
-      - User is authorized for this league member
       - User has not made too many recent transactions 
       */
-      const leagueMember = await ctx.prisma.leagueMember.findFirst({
-        where: { id: input.leagueMemberID },
-      });
-      if (leagueMember === null) {
-        //TODO: look into error handling
-        throw new Error("Could not find league member");
-      }
+
+      const leagueMember = await authenticateLeagueMember(
+        ctx.prisma,
+        ctx.accountID,
+        input.leagueMemberID
+      );
 
       const { id, name, cardType, price } = verifyCardJWT(input.token);
 
@@ -317,7 +348,10 @@ export const stocksRouter = createProtectedRouter()
         matchingCard === undefined ||
         matchingCard.quantity < input.quantity
       ) {
-        throw new Error("Could not find cards in portfolio");
+        throw new trpc.TRPCError({
+          code: "BAD_REQUEST",
+          message: "Could not find cards in portfolio",
+        });
       }
 
       const transaction: ITransaction = {
