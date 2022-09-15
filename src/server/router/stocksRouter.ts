@@ -100,15 +100,6 @@ export function verifyCardJWT(token: string): CardPriceJWT {
   }
 }
 
-/*
-TODO -- Endpoints needed:
-- Get league
-- Get current card price (user when selling)
-- Search cards (used when buying)
-- Buy cards
-- Sell cards
-*/
-
 export const stocksRouter = createProtectedRouter()
   .query("leagueHome", {
     input: z.object({
@@ -207,7 +198,7 @@ export const stocksRouter = createProtectedRouter()
       searchTerm: z.string(),
       page: z.number(),
     }),
-    async resolve({ input, ctx }) {
+    async resolve({ input }) {
       const url = `https://api.scryfall.com/cards/search?q=${input.searchTerm}&page=${input.page}&unique=prints`;
       const resp = await fetch(url);
       const data = await resp.json();

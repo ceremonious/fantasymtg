@@ -14,14 +14,6 @@ model Example {
     id String @id @default(cuid())
 }
 
-// model Account {
-//     id String @id @default(cuid())
-//     phoneNumber String
-//     createdAt DateTime
-
-//     leagueMember LeagueMember[]
-// }
-
 model League {
     id String @id @default(cuid())
     name String
@@ -41,14 +33,13 @@ model LeagueMember {
     isOwner Boolean
     createdAt DateTime
 
-    // account   Account @relation(fields: [accountID], references: [id])
     leauge    League @relation(fields: [leagueID], references: [id])
 
     transactions Transaction[]
 }
 
 model Card {
-    id String @id @default(cuid())
+    id String @id
     name String
 
     transactions Transaction[]
@@ -56,13 +47,13 @@ model Card {
 }
 
 model CardPrice {
-    id String @id @default(cuid()) //TOOD: get rid of this
     cardID String 
     timestamp DateTime
     amountNormal Int
     amountFoil Int
 
     card      Card @relation(fields: [cardID], references: [id])
+    @@unique([cardID, timestamp])
 }
 
 model Transaction {
@@ -72,13 +63,13 @@ model Transaction {
     leagueID String
     leagueMemberID String
 
-    type String //TODO: should be enum
-    cardID String //TODO: should be nullable
-    cardType String
+    type String
+    cardID String?
+    cardType String?
     amount Int
     quantity Int
 
-    card      Card @relation(fields: [cardID], references: [id])
+    card      Card? @relation(fields: [cardID], references: [id])
     leauge    League @relation(fields: [leagueID], references: [id])
     member    LeagueMember @relation(fields: [leagueMemberID], references: [id])
 }

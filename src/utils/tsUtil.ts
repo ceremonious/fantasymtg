@@ -33,6 +33,6 @@ export function filterMap<T, K>(
   return output;
 }
 
-export function prettyPrint(obj: any) {
+export function prettyPrint(obj: unknown) {
   console.log(JSON.stringify(obj, null, 2));
 }
