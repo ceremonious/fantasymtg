@@ -103,7 +103,7 @@ function getCardPrice(
 ) {
   for (let i = validPrices.length - 1; i >= 0; i--) {
     const cardPrice = validPrices[i];
-    if (cardPrice !== undefined && cardPrice.id === card.id) {
+    if (cardPrice !== undefined && cardPrice.cardID === card.id) {
       if (card.type === "NORMAL") {
         return cardPrice.amountNormal;
       } else if (card.type === "FOIL") {

@@ -17,7 +17,7 @@ model Example {
 model League {
     id String @id @default(cuid())
     name String
-    createdAt DateTime
+    createdAt DateTime @default(now())
     startDate DateTime
     startingAmount Int
 
@@ -31,7 +31,7 @@ model LeagueMember {
     accountID String
     leagueID String
     isOwner Boolean
-    createdAt DateTime
+    createdAt DateTime @default(now())
 
     leauge    League @relation(fields: [leagueID], references: [id])
 

@@ -101,6 +101,36 @@ export function verifyCardJWT(token: string): CardPriceJWT {
 }
 
 export const stocksRouter = createProtectedRouter()
+  .mutation("createLeague", {
+    input: z.object({
+      leagueName: z.string(),
+      displayName: z.string(),
+      startDate: z.date(),
+      startingAmount: z.number().int().positive(),
+    }),
+    async resolve({ input, ctx }) {
+      const league = await ctx.prisma.league.create({
+        data: {
+          name: input.leagueName,
+          startingAmount: input.startingAmount,
+          startDate: input.startDate,
+          leagueMember: {
+            create: [
+              {
+                accountID: ctx.accountID,
+                displayName: input.displayName,
+                isOwner: true,
+              },
+            ],
+          },
+        },
+      });
+
+      return {
+        leagueID: league.id,
+      };
+    },
+  })
   .query("leagueHome", {
     input: z.object({
       leagueID: z.string(),
@@ -150,9 +180,10 @@ export const stocksRouter = createProtectedRouter()
 
       return {
         league: pick(league, "name"),
-        members: leagueMembers.map((x) =>
-          pick(x, "id", "displayName", "isOwner")
-        ),
+        members: leagueMembers.map((x) => ({
+          ...pick(x, "id", "displayName", "isOwner"),
+          isSelf: x.accountID === ctx.accountID,
+        })),
         portfolios,
         netWorthOverTime,
         cards: cardsWithPrices,

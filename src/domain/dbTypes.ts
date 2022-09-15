@@ -1,11 +1,3 @@
-// export interface LeagueMember {
-//   id: LeagueMemberID;
-//   leagueID: LeagueID;
-//   displayName: string;
-//   isOwner: boolean;
-//   createdAt: Date;
-// }
-
 interface TransactionBase {
   leagueID: string;
   description: string;
