@@ -1,11 +1,16 @@
-import { CardID, LeagueMemberID } from "./dbTypes";
+export interface CardPriceJWT {
+  id: string;
+  name: string;
+  cardType: "NORMAL" | "FOIL";
+  price: number;
+}
 
 export interface Portfolio {
   cash: number;
-  cards: { cardID: CardID; quantity: number }[];
+  cards: { card: { id: string; type: "NORMAL" | "FOIL" }; quantity: number }[];
 }
 
 export type NetWorthOverTime = {
   timestamp: Date;
-  netWorths: Record<LeagueMemberID, number>;
+  netWorths: Record<string, number>;
 }[];

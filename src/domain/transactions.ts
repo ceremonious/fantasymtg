@@ -1,18 +1,21 @@
-import { CardPrice } from "@prisma/client";
+import { Card, CardPrice } from "@prisma/client";
 import { assertNever, setToNoon } from "../utils/tsUtil";
-import { CardID, LeagueMemberID, Transaction } from "./dbTypes";
+import { ITransaction } from "./dbTypes";
 import { NetWorthOverTime, Portfolio } from "./miscTypes";
 import addDays from "date-fns/addDays";
 
 function updatePortfolio(
   portfolio: Portfolio,
-  transaction: Transaction
+  transaction: ITransaction
 ): Portfolio {
   if (transaction.type === "BUY") {
     const totalVal = transaction.amount * transaction.quantity;
     let didUpdate = false;
     const newCards = portfolio.cards.map((card) => {
-      if (card.cardID === transaction.cardID) {
+      if (
+        card.card.id === transaction.cardID &&
+        card.card.type === transaction.cardType
+      ) {
         didUpdate = true;
         return { ...card, quantity: card.quantity + transaction.quantity };
       } else {
@@ -21,7 +24,7 @@ function updatePortfolio(
     });
     if (!didUpdate) {
       newCards.push({
-        cardID: transaction.cardID,
+        card: { id: transaction.cardID, type: transaction.cardType },
         quantity: transaction.quantity,
       });
     }
@@ -34,7 +37,10 @@ function updatePortfolio(
     const totalVal = transaction.amount * transaction.quantity;
     const newCards = portfolio.cards
       .map((card) => {
-        if (card.cardID === transaction.cardID) {
+        if (
+          card.card.id === transaction.cardID &&
+          card.card.type === transaction.cardType
+        ) {
           //TODO: potentially warn if this value becomes negative
           return { ...card, quantity: card.quantity - transaction.quantity };
         } else {
@@ -59,9 +65,9 @@ function updatePortfolio(
 
 export function calculateLeaguePortfolios(
   startingAmount: number,
-  allTransactions: Transaction[]
-): Map<LeagueMemberID, Portfolio> {
-  const portfolios = new Map<LeagueMemberID, Portfolio>();
+  allTransactions: ITransaction[]
+): Map<string, Portfolio> {
+  const portfolios = new Map<string, Portfolio>();
 
   for (const transaction of allTransactions) {
     const memberID = transaction.leagueMemberID;
@@ -76,9 +82,9 @@ export function calculateLeaguePortfolios(
   return portfolios;
 }
 
-function calculatePortfolio(
+export function calculatePortfolio(
   startingAmount: number,
-  transactions: Transaction[]
+  transactions: ITransaction[]
 ): Portfolio {
   let currPortfolio: Portfolio = {
     cash: startingAmount,
@@ -91,14 +97,20 @@ function calculatePortfolio(
 }
 
 function getCardPrice(
-  cardID: CardID,
+  card: { id: string; type: "NORMAL" | "FOIL" },
   validPrices: CardPrice[],
-  transactions: Transaction[]
+  transactions: ITransaction[]
 ) {
   for (let i = validPrices.length - 1; i >= 0; i--) {
     const cardPrice = validPrices[i];
-    if (cardPrice !== undefined && cardPrice.id === cardID) {
-      return cardPrice.amount;
+    if (cardPrice !== undefined && cardPrice.id === card.id) {
+      if (card.type === "NORMAL") {
+        return cardPrice.amountNormal;
+      } else if (card.type === "FOIL") {
+        return cardPrice.amountFoil;
+      } else {
+        assertNever(card.type);
+      }
     }
   }
   for (let i = transactions.length - 1; i >= 0; i--) {
@@ -114,9 +126,9 @@ function getCardPrice(
 }
 
 function netWorthArrToMap(
-  arr: (readonly [`lm_${string}`, number])[]
-): Record<LeagueMemberID, number> {
-  const netWorthMap: Record<LeagueMemberID, number> = {};
+  arr: (readonly [string, number])[]
+): Record<string, number> {
+  const netWorthMap: Record<string, number> = {};
   for (const val of arr) {
     netWorthMap[val[0]] = val[1];
   }
@@ -126,8 +138,8 @@ function netWorthArrToMap(
 export function calculateNetWorthOverTime(params: {
   startDate: Date;
   startingAmount: number;
-  leaugeMemberIDs: LeagueMemberID[];
-  allTransactions: Transaction[];
+  leaugeMemberIDs: string[];
+  allTransactions: ITransaction[];
   cardsPrices: CardPrice[];
 }): NetWorthOverTime {
   const {
@@ -161,7 +173,7 @@ export function calculateNetWorthOverTime(params: {
 
       let netWorth = portfolio.cash;
       for (const card of portfolio.cards) {
-        const price = getCardPrice(card.cardID, validPrices, transactions);
+        const price = getCardPrice(card.card, validPrices, transactions);
         netWorth += card.quantity * price;
       }
       return [mid, netWorth] as const;
@@ -176,4 +188,71 @@ export function calculateNetWorthOverTime(params: {
   }
 
   return netWorthOverTime;
+}
+
+export function getCardIDsFromPortfolios(
+  leaguePortfolios: Map<string, Portfolio>
+) {
+  return Array.from(leaguePortfolios.values())
+    .map((portfolio) => {
+      return portfolio.cards.map((c) => c.card.id);
+    })
+    .flat();
+}
+
+export function getCardsWithPrices(
+  cards: Card[],
+  validPrices: CardPrice[],
+  transactions: ITransaction[]
+) {
+  const priceMap: Map<string, { amountNormal?: number; amountFoil?: number }> =
+    new Map();
+
+  for (let i = validPrices.length - 1; i >= 0; i--) {
+    const cardPrice = validPrices[i];
+    if (cardPrice !== undefined) {
+      const currVal = priceMap.get(cardPrice.cardID);
+      if (currVal === undefined) {
+        priceMap.set(cardPrice.cardID, {
+          amountFoil: cardPrice.amountFoil,
+          amountNormal: cardPrice.amountNormal,
+        });
+      }
+    }
+  }
+  for (let i = transactions.length - 1; i >= 0; i--) {
+    const transaction = transactions[i];
+    if (
+      transaction !== undefined &&
+      (transaction.type === "BUY" || transaction.type === "SELL")
+    ) {
+      const currVal = priceMap.get(transaction.cardID);
+      if (
+        transaction.cardType === "NORMAL" &&
+        currVal?.amountNormal === undefined
+      ) {
+        priceMap.set(transaction.cardID, {
+          ...(currVal ?? {}),
+          amountNormal: transaction.amount,
+        });
+      } else if (
+        transaction.cardType === "FOIL" &&
+        currVal?.amountFoil === undefined
+      ) {
+        priceMap.set(transaction.cardID, {
+          ...(currVal ?? {}),
+          amountFoil: transaction.amount,
+        });
+      }
+    }
+  }
+
+  return cards.map((card) => {
+    const cardPrice = priceMap.get(card.id);
+    return {
+      ...card,
+      amountNormal: cardPrice?.amountNormal,
+      amountFoil: cardPrice?.amountFoil,
+    };
+  });
 }

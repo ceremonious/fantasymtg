@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 export function assertNever(_: never): never {
   throw new Error("Unreachable code");
 }
@@ -13,6 +11,28 @@ export function setToNoon(date: Date) {
   return newDate;
 }
 
-export function zodID<T extends string>() {
-  return z.custom<T>((val) => z.string().safeParse(val).success);
+export function pick<T, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
+  const ret = {} as Pick<T, K>;
+  keys.forEach((key) => {
+    ret[key] = obj[key];
+  });
+  return ret;
+}
+
+export function filterMap<T, K>(
+  arr: T[],
+  func: (val: T, index: number) => K | undefined
+): K[] {
+  const output: K[] = [];
+  arr.forEach((obj, index) => {
+    const val = func(obj, index);
+    if (val !== undefined) {
+      output.push(val);
+    }
+  });
+  return output;
+}
+
+export function prettyPrint(obj: any) {
+  console.log(JSON.stringify(obj, null, 2));
 }

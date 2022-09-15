@@ -59,7 +59,8 @@ model CardPrice {
     id String @id @default(cuid()) //TOOD: get rid of this
     cardID String 
     timestamp DateTime
-    amount Int
+    amountNormal Int
+    amountFoil Int
 
     card      Card @relation(fields: [cardID], references: [id])
 }
@@ -73,6 +74,7 @@ model Transaction {
 
     type String //TODO: should be enum
     cardID String //TODO: should be nullable
+    cardType String
     amount Int
     quantity Int
 

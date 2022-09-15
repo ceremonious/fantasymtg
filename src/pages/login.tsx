@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import { trpc } from "../utils/trpc";
 import { getBaseUrl } from "./_app";
 
 export default function Auth() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [code, setCode] = useState("");
   const [shouldPromptCode, setShouldPromptCode] = useState(false);
+  // const test = trpc.useQuery([
+  //   "stocks.searchCards",
+  //   { searchTerm: "meathook", page: 1 },
+  // ]);
+
+  // console.log(test.data, 123);
 
   const onSubmitPhoneNumber = async () => {
     const { error } = await supabase.auth.signInWithOtp({ phone: phoneNumber });

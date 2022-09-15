@@ -1,7 +1,3 @@
-export type LeagueID = `leg_${string}`;
-export type LeagueMemberID = `lm_${string}`;
-export type CardID = `crd_${string}`;
-
 // export interface LeagueMember {
 //   id: LeagueMemberID;
 //   leagueID: LeagueID;
@@ -11,17 +7,18 @@ export type CardID = `crd_${string}`;
 // }
 
 interface TransactionBase {
-  leagueID: LeagueID;
+  leagueID: string;
   description: string;
   createdAt: Date;
-  leagueMemberID: LeagueMemberID;
+  leagueMemberID: string;
 }
 
-export type Transaction = TransactionBase &
+export type ITransaction = TransactionBase &
   (
     | {
         type: "BUY" | "SELL";
-        cardID: CardID;
+        cardID: string;
+        cardType: "NORMAL" | "FOIL";
         amount: number;
         quantity: number;
       }

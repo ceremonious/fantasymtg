@@ -1,12 +1,76 @@
 import { createRouter } from "./context";
 import { z } from "zod";
-import { zodID } from "../../utils/tsUtil";
+import { filterMap, pick } from "../../utils/tsUtil";
+import { ITransaction } from "../../domain/dbTypes";
+import jwt from "jsonwebtoken";
+import { CardPriceJWT } from "../../domain/miscTypes";
 import {
-  CardID,
-  LeagueID,
-  LeagueMemberID,
-  Transaction,
-} from "../../domain/dbTypes";
+  calculateLeaguePortfolios,
+  calculateNetWorthOverTime,
+  calculatePortfolio,
+  getCardIDsFromPortfolios,
+  getCardsWithPrices,
+} from "../../domain/transactions";
+import { Prisma, PrismaClient, Transaction } from "@prisma/client";
+import { GetLeagueHomePage } from "../../domain/apiTypes";
+
+type IPrismaClient = PrismaClient<
+  Prisma.PrismaClientOptions,
+  never,
+  Prisma.RejectOnNotFound | Prisma.RejectPerOperation | undefined
+>;
+
+function convertTransactions(transactions: Transaction[]) {
+  return transactions as ITransaction[];
+}
+
+async function getLeagueMemberPortfolio(
+  prisma: IPrismaClient,
+  leagueID: string,
+  leagueMemberID: string
+) {
+  const [league, transactions] = await Promise.all([
+    prisma.league.findFirst({ where: { id: leagueID } }),
+    prisma.transaction.findMany({
+      where: { leagueMemberID },
+    }),
+  ]);
+  if (league === null) {
+    throw new Error("Could not find league");
+  }
+  return calculatePortfolio(
+    league.startingAmount,
+    convertTransactions(transactions)
+  );
+}
+
+function signJWT(data: CardPriceJWT) {
+  const JWT_SECRET = process.env.JWT_SECRET;
+  if (JWT_SECRET === undefined) {
+    throw new Error("JWT Secret not found");
+  }
+  return jwt.sign(data, JWT_SECRET, {
+    expiresIn: 60 * 5,
+  });
+}
+
+export function verifyCardJWT(token: string): CardPriceJWT {
+  try {
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (JWT_SECRET === undefined) {
+      throw new Error("JWT Secret not found");
+    }
+    const data = jwt.verify(token, JWT_SECRET);
+
+    if (typeof data !== "string") {
+      return data as CardPriceJWT;
+    } else {
+      throw new Error("Unknown error encountered");
+    }
+  } catch (error) {
+    throw new Error("Unknown error encountered");
+  }
+}
 
 /*
 TODO -- Endpoints needed:
@@ -19,34 +83,199 @@ TODO -- Endpoints needed:
 
 export const stocksRouter = createRouter()
   .query("leagueHome", {
-    input: z
-      .object({
-        text: z.string().nullish(),
-      })
-      .nullish(),
-    resolve({ input }) {
+    input: z.object({
+      leagueID: z.string(),
+    }),
+    async resolve({ input, ctx }): Promise<GetLeagueHomePage> {
+      const [league, leagueMembers, transactions] = await Promise.all([
+        ctx.prisma.league.findFirst({ where: { id: input.leagueID } }),
+        ctx.prisma.leagueMember.findMany({
+          where: { leagueID: input.leagueID },
+        }),
+        ctx.prisma.transaction.findMany({
+          where: { leagueID: input.leagueID },
+        }),
+      ]);
+      if (league === null) {
+        throw new Error("Could not find league");
+      }
+
+      const portfolios = calculateLeaguePortfolios(
+        league.startingAmount,
+        convertTransactions(transactions)
+      );
+      const cardIDs = getCardIDsFromPortfolios(portfolios);
+      const [cards, cardsPrices] = await Promise.all([
+        ctx.prisma.card.findMany({ where: { id: { in: cardIDs } } }),
+        ctx.prisma.cardPrice.findMany({
+          where: { cardID: { in: cardIDs } },
+          orderBy: { timestamp: "asc" },
+        }),
+      ]);
+
+      const netWorthOverTime = calculateNetWorthOverTime({
+        startDate: league.startDate,
+        allTransactions: convertTransactions(transactions),
+        startingAmount: league.startingAmount,
+        leaugeMemberIDs: leagueMembers.map((x) => x.id),
+        cardsPrices,
+      });
+      const cardsWithPrices = getCardsWithPrices(
+        cards,
+        cardsPrices,
+        convertTransactions(transactions)
+      );
+
       return {
-        greeting: `Hello ${input?.text ?? "world"}`,
+        league: pick(league, "name"),
+        members: leagueMembers.map((x) =>
+          pick(x, "id", "displayName", "isOwner")
+        ),
+        portfolios,
+        netWorthOverTime,
+        cards: cardsWithPrices,
       };
     },
   })
-  .query("getAll", {
-    async resolve({ ctx }) {
-      return await ctx.prisma.example.findMany();
+  .query("getCard", {
+    input: z.object({
+      cardID: z.string(),
+      cardType: z.literal("NORMAL").or(z.literal("FOIL")),
+    }),
+    async resolve({ input }) {
+      const url = `https://api.scryfall.com/cards/${input.cardID}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      const card = data.data;
+
+      const rawPrice = input.cardType === "NORMAL" ? card.usd : card.usd_foil;
+      const parsedPrice = parseFloat(rawPrice);
+      if (parsedPrice === NaN) {
+        throw new Error("Could not get card price");
+      }
+      const price = parsedPrice * 100;
+
+      const jwt = signJWT({
+        id: input.cardID,
+        cardType: input.cardType,
+        name: card.name,
+        price,
+      });
+
+      return {
+        price,
+        jwt,
+      };
+    },
+  })
+  .query("searchCards", {
+    input: z.object({
+      searchTerm: z.string(),
+      page: z.number(),
+    }),
+    async resolve({ input, ctx }) {
+      const url = `https://api.scryfall.com/cards/search?q=${input.searchTerm}&page=${input.page}&unique=prints`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      const cards = filterMap(data.data, (card: any) => {
+        const usd = parseFloat(card.prices.usd);
+        const usdFoil = parseFloat(card.prices.usd_foil);
+        const hasPrice = usd !== NaN || usdFoil !== NaN;
+
+        if (!card.digital && hasPrice) {
+          const cardID = card.id;
+          const cardName = card.name as string;
+          const usdJWT =
+            usd !== NaN
+              ? {
+                  id: cardID,
+                  name: cardName,
+                  cardType: "NORMAL" as const,
+                  price: usd * 100,
+                }
+              : null;
+          const usdFoilJWT =
+            usdFoil !== NaN
+              ? {
+                  id: cardID,
+                  name: cardName,
+                  cardType: "FOIL" as const,
+                  price: usdFoil * 100,
+                }
+              : null;
+
+          return {
+            id: cardID,
+            name: cardName,
+            scryfallURI: card.scryfall_uri as string,
+            imageURI: card.image_uris.normal as string,
+            usd:
+              usdJWT !== null
+                ? { price: usdJWT.price, jwt: signJWT(usdJWT) }
+                : null,
+            usdFoil:
+              usdFoilJWT !== null
+                ? { price: usdFoilJWT.price, jwt: signJWT(usdFoilJWT) }
+                : null,
+          };
+        }
+      });
+
+      return { cards, hasMore: data.has_more };
     },
   })
   .mutation("buyCard", {
     input: z.object({
-      leagueMemberID: zodID<LeagueMemberID>(),
+      leagueMemberID: z.string(),
+      token: z.string(),
+      description: z.string(),
       quantity: z.number().positive(),
     }),
     async resolve({ input, ctx }) {
       /*
       TODO -- Validate the following:
       - User is authorized for this league member
-      - User has the funds to buy this card
       - User has not made too many recent transactions 
       */
+
+      const leagueMember = await ctx.prisma.leagueMember.findFirst({
+        where: { id: input.leagueMemberID },
+      });
+      if (leagueMember === null) {
+        //TODO: look into error handling
+        throw new Error("Could not find league member");
+      }
+
+      const { id, name, cardType, price } = verifyCardJWT(input.token);
+      const totalAmount = price * input.quantity;
+
+      const portfolio = await getLeagueMemberPortfolio(
+        ctx.prisma,
+        leagueMember.leagueID,
+        leagueMember.id
+      );
+      if (portfolio.cash < totalAmount) {
+        throw new Error("Insufficient funds");
+      }
+
+      const transaction: ITransaction = {
+        leagueID: leagueMember.leagueID,
+        description: input.description,
+        amount: price,
+        quantity: input.quantity,
+        cardID: id,
+        cardType: cardType,
+        type: "BUY",
+        createdAt: new Date(),
+        leagueMemberID: input.leagueMemberID,
+      };
+      await ctx.prisma.transaction.create({ data: transaction });
+      await ctx.prisma.card.upsert({
+        create: { id, name },
+        update: { name },
+        where: { id },
+      });
 
       return {
         status: "SUCCESS",
@@ -55,16 +284,15 @@ export const stocksRouter = createRouter()
   })
   .mutation("sellCard", {
     input: z.object({
-      leagueMemberID: zodID<LeagueMemberID>(),
+      leagueMemberID: z.string(),
+      token: z.string(),
       description: z.string(),
       quantity: z.number().positive(),
     }),
     async resolve({ input, ctx }) {
       /*
       TODO -- Validate the following:
-      - League Member exists
       - User is authorized for this league member
-      - User has this many cards to sell
       - User has not made too many recent transactions 
       */
       const leagueMember = await ctx.prisma.leagueMember.findFirst({
@@ -75,24 +303,40 @@ export const stocksRouter = createRouter()
         throw new Error("Could not find league member");
       }
 
-      //TODO: get amount & card from JWT
-      const cardID = "crd_123";
-      const amount = 10;
+      const { id, name, cardType, price } = verifyCardJWT(input.token);
 
-      const transaction: Transaction = {
-        //TODO: better inference
-        leagueID: leagueMember.leagueID as LeagueID,
+      const portfolio = await getLeagueMemberPortfolio(
+        ctx.prisma,
+        leagueMember.leagueID,
+        leagueMember.id
+      );
+      const matchingCard = portfolio.cards.find(
+        (card) => card.card.id === id && card.card.type === cardType
+      );
+      if (
+        matchingCard === undefined ||
+        matchingCard.quantity < input.quantity
+      ) {
+        throw new Error("Could not find cards in portfolio");
+      }
+
+      const transaction: ITransaction = {
+        leagueID: leagueMember.leagueID,
         description: input.description,
-        amount: amount,
+        amount: price,
         quantity: input.quantity,
-        cardID,
+        cardID: id,
+        cardType: cardType,
         type: "SELL",
         createdAt: new Date(),
         leagueMemberID: input.leagueMemberID,
       };
       await ctx.prisma.transaction.create({ data: transaction });
-
-      //TODO if the card does not exist in the database, we need to create it
+      await ctx.prisma.card.upsert({
+        create: { id, name },
+        update: { name },
+        where: { id },
+      });
 
       return {
         status: "SUCCESS",
