@@ -42,7 +42,7 @@ export default function PhoneNumberInput(props: Props) {
           type="text"
           name="phone-number"
           id="phone-number"
-          className="block w-full rounded-md border-gray-300 pl-16 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="block w-full rounded-md border-gray-300 pl-20 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
           placeholder="555-987-6543"
         />
       </div>
