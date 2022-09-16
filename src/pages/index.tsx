@@ -2,6 +2,12 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
 
+/* 
+Components:
+https://tailwindui.com/components/application-ui/application-shells/stacked#component-d3429709d7862763cc93bbc60777c0fe
+
+*/
+
 const Home: NextPage = () => {
   const hello = trpc.useQuery(["example.hello", { text: "from tRPC" }]);
 
