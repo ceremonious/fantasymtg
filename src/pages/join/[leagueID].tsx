@@ -3,16 +3,26 @@ import { useRouter } from "next/router";
 import React from "react";
 import LoginForm from "../../components/LoginForm";
 
-interface Props {
-  league: {
-    id: string;
-    name: string;
-  };
-  creatorName: string;
-}
+type Props =
+  | {
+      foundLeague: false;
+    }
+  | {
+      foundLeague: true;
+      league: {
+        id: string;
+        name: string;
+      };
+      creatorName: string;
+    };
 
 const JoinLeaguePage = (props: Props) => {
   const router = useRouter();
+
+  if (!props.foundLeague) {
+    //TODO: style
+    return <p>No league</p>;
+  }
 
   return (
     <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -47,14 +57,31 @@ export const getServerSideProps: GetServerSideProps = async (
   const leagueID =
     typeof context.params?.leagueID === "string" ? context.params.leagueID : "";
 
-  return {
-    props: {
-      league: {
-        id: leagueID,
-        name: "Cool League",
+  if (prisma !== undefined) {
+    const league = await prisma.league.findFirst({
+      where: { id: leagueID },
+      include: {
+        leagueMember: { select: { isOwner: true, displayName: true } },
       },
-      creatorName: "Mayhul",
-    },
+    });
+    if (league !== null) {
+      const creatorName =
+        league.leagueMember.find((x) => x.isOwner)?.displayName ?? "";
+      return {
+        props: {
+          foundLeague: true,
+          league: {
+            id: leagueID,
+            name: league.name,
+          },
+          creatorName,
+        },
+      };
+    }
+  }
+
+  return {
+    props: { foundLeague: false },
   };
 };
 
