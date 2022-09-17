@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import React from "react";
+import LeagueHome from "../../components/LeagueHome";
 import LeagueLayout from "../../components/LeagueLayout";
 
 interface Props {
@@ -8,18 +9,11 @@ interface Props {
 }
 
 const LeaguePage = (props: Props) => {
-  const leftColumn = (
-    <>
-      <h2>Left Column</h2>
-    </>
+  return (
+    <LeagueLayout>
+      <LeagueHome />
+    </LeagueLayout>
   );
-  const rightColumn = (
-    <>
-      <h2>Right Column</h2>
-    </>
-  );
-
-  return <LeagueLayout leftColumn={leftColumn} rightColumn={rightColumn} />;
 };
 
 export const getServerSideProps: GetServerSideProps = async (

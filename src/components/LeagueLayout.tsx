@@ -1,5 +1,6 @@
+/* This example requires Tailwind CSS v2.0+ */
 import { Fragment } from "react";
-import { Menu, Popover, Transition } from "@headlessui/react";
+import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const user = {
@@ -10,85 +11,106 @@ const user = {
 };
 const navigation = [
   { name: "Home", href: "#", current: true },
-  { name: "View All Trades", href: "#", current: false },
+  { name: "Transaction History", href: "#", current: false },
 ];
-const userNavigation = [{ name: "Sign out", href: "#" }];
+const userNavigation = [
+  { name: "Your Profile", href: "#" },
+  { name: "Settings", href: "#" },
+  { name: "Sign out", href: "#" },
+];
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
 interface Props {
-  leftColumn: JSX.Element;
-  rightColumn: JSX.Element;
+  children: JSX.Element;
 }
 
 export default function LeagueLayout(props: Props) {
   return (
     <>
       <div className="min-h-full">
-        <Popover as="header" className="bg-indigo-600 pb-24">
+        <Disclosure as="nav" className="bg-gray-800">
           {({ open }) => (
             <>
-              <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-                <div className="relative flex items-center justify-center py-5 lg:justify-between">
-                  {/* Logo */}
-                  <div className="absolute left-0 flex-shrink-0 lg:static">
-                    <a href="#">
-                      <span className="sr-only">Your Company</span>
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
                       <img
-                        className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=300"
+                        className="h-8 w-8"
+                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
                         alt="Your Company"
                       />
-                    </a>
-                  </div>
-
-                  {/* Right section on desktop */}
-                  <div className="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5">
-                    {/* Profile dropdown */}
-                    <Menu as="div" className="relative ml-4 flex-shrink-0">
-                      <div>
-                        <Menu.Button className="flex rounded-full bg-white text-sm ring-2 ring-white ring-opacity-20 focus:outline-none focus:ring-opacity-100">
-                          <span className="sr-only">Open user menu</span>
-                          <img
-                            className="h-8 w-8 rounded-full"
-                            src={user.imageUrl}
-                            alt=""
-                          />
-                        </Menu.Button>
+                    </div>
+                    <div className="hidden md:block">
+                      <div className="ml-10 flex items-baseline space-x-4">
+                        {navigation.map((item) => (
+                          <a
+                            key={item.name}
+                            href={item.href}
+                            className={classNames(
+                              item.current
+                                ? "bg-gray-900 text-white"
+                                : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                              "px-3 py-2 rounded-md text-sm font-medium"
+                            )}
+                            aria-current={item.current ? "page" : undefined}
+                          >
+                            {item.name}
+                          </a>
+                        ))}
                       </div>
-                      <Transition
-                        as={Fragment}
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
-                      >
-                        <Menu.Items className="absolute -right-2 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          {userNavigation.map((item) => (
-                            <Menu.Item key={item.name}>
-                              {({ active }) => (
-                                <a
-                                  href={item.href}
-                                  className={classNames(
-                                    active ? "bg-gray-100" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
-                                  )}
-                                >
-                                  {item.name}
-                                </a>
-                              )}
-                            </Menu.Item>
-                          ))}
-                        </Menu.Items>
-                      </Transition>
-                    </Menu>
+                    </div>
                   </div>
-
-                  {/* Menu button */}
-                  <div className="absolute right-0 flex-shrink-0 lg:hidden">
+                  <div className="hidden md:block">
+                    <div className="ml-4 flex items-center md:ml-6">
+                      {/* Profile dropdown */}
+                      <Menu as="div" className="relative ml-3">
+                        <div>
+                          <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                            <span className="sr-only">Open user menu</span>
+                            <img
+                              className="h-8 w-8 rounded-full"
+                              src={user.imageUrl}
+                              alt=""
+                            />
+                          </Menu.Button>
+                        </div>
+                        <Transition
+                          as={Fragment}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            {userNavigation.map((item) => (
+                              <Menu.Item key={item.name}>
+                                {({ active }) => (
+                                  <a
+                                    href={item.href}
+                                    className={classNames(
+                                      active ? "bg-gray-100" : "",
+                                      "block px-4 py-2 text-sm text-gray-700"
+                                    )}
+                                  >
+                                    {item.name}
+                                  </a>
+                                )}
+                              </Menu.Item>
+                            ))}
+                          </Menu.Items>
+                        </Transition>
+                      </Menu>
+                    </div>
+                  </div>
+                  <div className="-mr-2 flex md:hidden">
                     {/* Mobile menu button */}
-                    <Popover.Button className="inline-flex items-center justify-center rounded-md bg-transparent p-2 text-indigo-200 hover:bg-white hover:bg-opacity-10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
+                    <Disclosure.Button className="inline-flex items-center justify-center rounded-md bg-gray-800 p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                       <span className="sr-only">Open main menu</span>
                       {open ? (
                         <XMarkIcon
@@ -101,161 +123,110 @@ export default function LeagueLayout(props: Props) {
                           aria-hidden="true"
                         />
                       )}
-                    </Popover.Button>
+                    </Disclosure.Button>
                   </div>
                 </div>
-                <div className="hidden border-t border-white border-opacity-20 py-5 lg:block">
-                  <div className="grid grid-cols-3 items-center gap-8">
-                    <div className="col-span-2">
-                      <nav className="flex space-x-4">
-                        {navigation.map((item) => (
-                          <a
-                            key={item.name}
-                            href={item.href}
-                            className={classNames(
-                              item.current ? "text-white" : "text-indigo-100",
-                              "text-sm font-medium rounded-md bg-white bg-opacity-0 px-3 py-2 hover:bg-opacity-10"
-                            )}
-                            aria-current={item.current ? "page" : undefined}
-                          >
-                            {item.name}
-                          </a>
-                        ))}
-                      </nav>
+              </div>
+
+              <Disclosure.Panel className="md:hidden">
+                <div className="space-y-1 px-2 pt-2 pb-3 sm:px-3">
+                  {navigation.map((item) => (
+                    <Disclosure.Button
+                      key={item.name}
+                      as="a"
+                      href={item.href}
+                      className={classNames(
+                        item.current
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-300 hover:bg-gray-700 hover:text-white",
+                        "block px-3 py-2 rounded-md text-base font-medium"
+                      )}
+                      aria-current={item.current ? "page" : undefined}
+                    >
+                      {item.name}
+                    </Disclosure.Button>
+                  ))}
+                </div>
+                <div className="border-t border-gray-700 pt-4 pb-3">
+                  <div className="flex items-center px-5">
+                    <div className="flex-shrink-0">
+                      <img
+                        className="h-10 w-10 rounded-full"
+                        src={user.imageUrl}
+                        alt=""
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <div className="text-base font-medium text-white">
+                        {user.name}
+                      </div>
+                      <div className="text-sm font-medium text-gray-400">
+                        {user.email}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-3 space-y-1 px-2">
+                    {userNavigation.map((item) => (
+                      <Disclosure.Button
+                        key={item.name}
+                        as="a"
+                        href={item.href}
+                        className="block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white"
+                      >
+                        {item.name}
+                      </Disclosure.Button>
+                    ))}
+                  </div>
+                </div>
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+
+        <header className="bg-white shadow-sm">
+          <div className="mx-auto max-w-6xl py-4 px-4 sm:px-6 lg:px-8">
+            <div className="py-6 md:flex md:items-center md:justify-between">
+              <div className="min-w-0 flex-1">
+                {/* Profile */}
+                <div className="flex items-center">
+                  <img
+                    className="hidden h-16 w-16 rounded-full sm:block"
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.6&w=256&h=256&q=80"
+                    alt=""
+                  />
+                  <div>
+                    <div className="flex items-center">
+                      <img
+                        className="h-16 w-16 rounded-full sm:hidden"
+                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.6&w=256&h=256&q=80"
+                        alt=""
+                      />
+                      <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
+                        [League Name]
+                      </h1>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <Transition.Root as={Fragment}>
-                <div className="lg:hidden">
-                  <Transition.Child
-                    as={Fragment}
-                    enter="duration-150 ease-out"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="duration-150 ease-in"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <Popover.Overlay className="fixed inset-0 z-20 bg-black bg-opacity-25" />
-                  </Transition.Child>
-
-                  <Transition.Child
-                    as={Fragment}
-                    enter="duration-150 ease-out"
-                    enterFrom="opacity-0 scale-95"
-                    enterTo="opacity-100 scale-100"
-                    leave="duration-150 ease-in"
-                    leaveFrom="opacity-100 scale-100"
-                    leaveTo="opacity-0 scale-95"
-                  >
-                    <Popover.Panel
-                      focus
-                      className="absolute inset-x-0 top-0 z-30 mx-auto w-full max-w-3xl origin-top transform p-2 transition"
-                    >
-                      <div className="divide-y divide-gray-200 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-                        <div className="pt-3 pb-2">
-                          <div className="flex items-center justify-between px-4">
-                            <div>
-                              <img
-                                className="h-8 w-auto"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                                alt="Your Company"
-                              />
-                            </div>
-                            <div className="-mr-2">
-                              <Popover.Button className="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
-                                <span className="sr-only">Close menu</span>
-                                <XMarkIcon
-                                  className="h-6 w-6"
-                                  aria-hidden="true"
-                                />
-                              </Popover.Button>
-                            </div>
-                          </div>
-                          <div className="mt-3 space-y-1 px-2">
-                            {navigation.map((x) => (
-                              <a
-                                key={x.name}
-                                href={x.href}
-                                className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                              >
-                                {x.name}
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="pt-4 pb-2">
-                          <div className="flex items-center px-5">
-                            <div className="flex-shrink-0">
-                              <img
-                                className="h-10 w-10 rounded-full"
-                                src={user.imageUrl}
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-3 min-w-0 flex-1">
-                              <div className="truncate text-base font-medium text-gray-800">
-                                {user.name}
-                              </div>
-                              <div className="truncate text-sm font-medium text-gray-500">
-                                {user.email}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-3 space-y-1 px-2">
-                            {userNavigation.map((item) => (
-                              <a
-                                key={item.name}
-                                href={item.href}
-                                className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
-                              >
-                                {item.name}
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </Popover.Panel>
-                  </Transition.Child>
-                </div>
-              </Transition.Root>
-            </>
-          )}
-        </Popover>
-
-        <main className="-mt-24 pb-8">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-            <h1 className="sr-only">Page title</h1>
-            {/* Main 3 column grid */}
-            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
-              {/* Left column */}
-              <div className="grid grid-cols-1 gap-4 lg:col-span-2">
-                <section aria-labelledby="section-1-title">
-                  <h2 className="sr-only" id="section-1-title">
-                    Section title
-                  </h2>
-                  <div className="overflow-hidden rounded-lg bg-white shadow">
-                    <div className="p-6">{props.leftColumn}</div>
-                  </div>
-                </section>
-              </div>
-
-              {/* Right column */}
-              <div className="grid grid-cols-1 gap-4">
-                <section aria-labelledby="section-2-title">
-                  <h2 className="sr-only" id="section-2-title">
-                    Section title
-                  </h2>
-                  <div className="overflow-hidden rounded-lg bg-white shadow">
-                    <div className="p-6">{props.rightColumn}</div>
-                  </div>
-                </section>
+              <div className="mt-6 flex space-x-3 md:mt-0 md:ml-4">
+                <button
+                  type="button"
+                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                >
+                  Add money
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center rounded-md border border-transparent bg-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                >
+                  Send money
+                </button>
               </div>
             </div>
           </div>
-        </main>
+        </header>
+
+        <main>{props.children}</main>
       </div>
     </>
   );
