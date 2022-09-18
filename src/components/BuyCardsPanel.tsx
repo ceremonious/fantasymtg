@@ -197,7 +197,7 @@ export default function BuyCardsPanel(props: Props) {
 
                                         <div className="flex flex-row mt-4 space-x-4 flex-1">
                                           {card.usd !== null && (
-                                            <div className="flex flex-col min-w-[85px]">
+                                            <div className="flex flex-col min-w-[105px]">
                                               <p className="font-semibold text-gray-800">
                                                 Normal
                                               </p>
@@ -215,7 +215,7 @@ export default function BuyCardsPanel(props: Props) {
                                                     })
                                                   }
                                                   type="button"
-                                                  className="sm:mt-auto mt-4  inline-flex items-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                  className="sm:mt-auto mt-6 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                 >
                                                   Buy Normal
                                                 </button>
@@ -243,7 +243,7 @@ export default function BuyCardsPanel(props: Props) {
                                                     })
                                                   }
                                                   type="button"
-                                                  className="sm:mt-auto mt-4 inline-flex items-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                  className="sm:mt-auto mt-6 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                 >
                                                   Buy Foil
                                                 </button>
@@ -254,7 +254,7 @@ export default function BuyCardsPanel(props: Props) {
 
                                         {buyingCard !== null &&
                                           buyingCard.cardID === card.id && (
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:mt-auto mt-4 gap-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:mt-auto mt-6 gap-4">
                                               <div className="flex flex-row space-x-2 items-center">
                                                 <input
                                                   autoFocus
