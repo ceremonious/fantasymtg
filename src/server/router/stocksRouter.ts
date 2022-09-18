@@ -147,7 +147,7 @@ export const stocksRouter = createProtectedRouter()
       ]);
       if (league === null) {
         throw new trpc.TRPCError({
-          code: "BAD_REQUEST",
+          code: "NOT_FOUND",
           message: "Could not find league",
         });
       }
@@ -293,7 +293,6 @@ export const stocksRouter = createProtectedRouter()
     input: z.object({
       leagueMemberID: z.string(),
       token: z.string(),
-      description: z.string(),
       quantity: z.number().positive(),
     }),
     async resolve({ input, ctx }) {
@@ -324,7 +323,7 @@ export const stocksRouter = createProtectedRouter()
 
       const transaction: ITransaction = {
         leagueID: leagueMember.leagueID,
-        description: input.description,
+        description: "",
         amount: price,
         quantity: input.quantity,
         cardID: id,
@@ -333,12 +332,12 @@ export const stocksRouter = createProtectedRouter()
         createdAt: new Date(),
         leagueMemberID: input.leagueMemberID,
       };
-      await ctx.prisma.transaction.create({ data: transaction });
       await ctx.prisma.card.upsert({
         create: { id, name },
         update: { name },
         where: { id },
       });
+      await ctx.prisma.transaction.create({ data: transaction });
 
       return {
         status: "SUCCESS",

@@ -1,8 +1,5 @@
-import {
-  ArrowUpIcon,
-  BanknotesIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowUpIcon } from "@heroicons/react/24/outline";
+import { GetLeagueHomePage } from "../domain/apiTypes";
 import StatsOverview from "./StatsOverview";
 
 const transactions = [
@@ -45,7 +42,11 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function LeagueHome() {
+interface Props {
+  pageData: GetLeagueHomePage;
+}
+
+export default function LeagueHome(props: Props) {
   return (
     <>
       <div className="mt-8">

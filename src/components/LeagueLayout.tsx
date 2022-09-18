@@ -25,6 +25,7 @@ function classNames(...classes: string[]) {
 }
 
 interface Props {
+  leagueMemberID: string | null;
   children: JSX.Element;
 }
 
@@ -232,10 +233,13 @@ export default function LeagueLayout(props: Props) {
 
         <main>{props.children}</main>
       </div>
-      <BuyCardsPanel
-        isOpen={isBuyPanelOpen}
-        onClose={() => setIsBuyPanelOpen(false)}
-      />
+      {props.leagueMemberID !== null && (
+        <BuyCardsPanel
+          leagueMemberID={props.leagueMemberID}
+          isOpen={isBuyPanelOpen}
+          onClose={() => setIsBuyPanelOpen(false)}
+        />
+      )}
     </>
   );
 }

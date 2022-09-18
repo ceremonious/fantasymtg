@@ -6,6 +6,7 @@ import { formatPrice } from "../utils/tsUtil";
 import Spinner from "./Spinner";
 
 interface Props {
+  leagueMemberID: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -153,20 +154,26 @@ export default function BuyCardsPanel(props: Props) {
                               className="-my-5 divide-y divide-gray-200"
                             >
                               {searchResp.cards.map((card) => {
-                                let buyingPrice = 0;
+                                let buyingPriceInfo:
+                                  | {
+                                      price: number;
+                                      jwt: string;
+                                    }
+                                  | undefined;
                                 if (buyingCard !== null) {
                                   if (
                                     buyingCard.type === "NORMAL" &&
                                     card.usd !== null
                                   ) {
-                                    buyingPrice = card.usd.price;
+                                    buyingPriceInfo = card.usd;
                                   } else if (
                                     buyingCard.type === "FOIL" &&
                                     card.usdFoil !== null
                                   ) {
-                                    buyingPrice = card.usdFoil.price;
+                                    buyingPriceInfo = card.usdFoil;
                                   }
                                 }
+                                const buyingPrice = buyingPriceInfo?.price ?? 0;
 
                                 return (
                                   <li key={card.id} className="py-5">
@@ -307,25 +314,53 @@ export default function BuyCardsPanel(props: Props) {
                                                   )}
                                                 </span>
                                               </div>
-                                              <div className="space-x-4 sm:space-x-2">
-                                                <button
-                                                  disabled={isNaN(
-                                                    buyingCard.quantity
-                                                  )}
-                                                  type="button"
-                                                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                                >
-                                                  Buy
-                                                </button>
-                                                <button
-                                                  onClick={() =>
-                                                    setBuyingCard(null)
-                                                  }
-                                                  className="text-sm text-blue-400 hover:underline hover:text-blue-300"
-                                                >
-                                                  Cancel
-                                                </button>
-                                              </div>
+
+                                              {buyCard.isLoading ? (
+                                                <div className="flex flex-row items-center space-x-2">
+                                                  <Spinner />
+                                                  <p className="text-gray-500">
+                                                    Buying...
+                                                  </p>
+                                                </div>
+                                              ) : (
+                                                <div className="space-x-4 sm:space-x-2">
+                                                  <button
+                                                    onClick={async () => {
+                                                      if (
+                                                        buyingPriceInfo !==
+                                                        undefined
+                                                      ) {
+                                                        await buyCard.mutateAsync(
+                                                          {
+                                                            leagueMemberID:
+                                                              props.leagueMemberID,
+                                                            quantity:
+                                                              buyingCard.quantity,
+                                                            token:
+                                                              buyingPriceInfo.jwt,
+                                                          }
+                                                        );
+                                                        setBuyingCard(null);
+                                                      }
+                                                    }}
+                                                    disabled={isNaN(
+                                                      buyingCard.quantity
+                                                    )}
+                                                    type="button"
+                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                  >
+                                                    Buy
+                                                  </button>
+                                                  <button
+                                                    onClick={() =>
+                                                      setBuyingCard(null)
+                                                    }
+                                                    className="text-sm text-blue-400 hover:underline hover:text-blue-300"
+                                                  >
+                                                    Cancel
+                                                  </button>
+                                                </div>
+                                              )}
                                             </div>
                                           )}
                                       </div>
