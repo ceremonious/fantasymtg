@@ -20,6 +20,12 @@ export default function BuyCardsPanel(props: Props) {
     ["stocks.searchCards", currSearchState ?? { searchTerm: "", page: 1 }],
     { enabled: currSearchState !== null, refetchOnWindowFocus: false }
   );
+  const [buyingCard, setBuyingCard] = useState<{
+    cardID: string;
+    type: "NORMAL" | "FOIL";
+    quantity: number;
+  } | null>(null);
+  const buyCard = trpc.useMutation(["stocks.buyCard"]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -146,71 +152,187 @@ export default function BuyCardsPanel(props: Props) {
                               role="list"
                               className="-my-5 divide-y divide-gray-200"
                             >
-                              {searchResp.cards.map((card) => (
-                                <li key={card.id} className="py-5">
-                                  <div className="md:flex md:space-x-6">
-                                    <img
-                                      style={{
-                                        height: 192,
-                                        width: 142,
-                                        borderRadius: "4.75% / 3.5%",
-                                      }}
-                                      src={card.imageURI ?? ""}
-                                      alt={card.name}
-                                    />
-                                    <div className="flex flex-col">
-                                      <h3 className="font-bold text-gray-800">
-                                        <a
-                                          target="_blank"
-                                          href={card.scryfallURI}
-                                          className="hover:underline focus:outline-none"
-                                          rel="noreferrer"
-                                        >
-                                          {card.name}
-                                        </a>
-                                      </h3>
-                                      <p className="text-sm text-gray-600 line-clamp-2">
-                                        {card.setName}
-                                      </p>
+                              {searchResp.cards.map((card) => {
+                                let buyingPrice = 0;
+                                if (buyingCard !== null) {
+                                  if (
+                                    buyingCard.type === "NORMAL" &&
+                                    card.usd !== null
+                                  ) {
+                                    buyingPrice = card.usd.price;
+                                  } else if (
+                                    buyingCard.type === "FOIL" &&
+                                    card.usdFoil !== null
+                                  ) {
+                                    buyingPrice = card.usdFoil.price;
+                                  }
+                                }
 
-                                      <div className="flex flex-row mt-4 space-x-4 flex-1">
-                                        {card.usd !== null && (
-                                          <div className="flex flex-col">
-                                            <p className="font-semibold text-gray-800">
-                                              Normal
-                                            </p>
-                                            <p className="text-gray-600">
-                                              {formatPrice(card.usd.price)}
-                                            </p>
-                                            <button
-                                              type="button"
-                                              className="sm:mt-auto mt-4  inline-flex items-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                            >
-                                              Buy Normal
-                                            </button>
-                                          </div>
-                                        )}
-                                        {card.usdFoil !== null && (
-                                          <div className="flex flex-col">
-                                            <p className="font-semibold text-gray-800">
-                                              Foil
-                                            </p>
-                                            <p className="text-gray-600">
-                                              {formatPrice(card.usdFoil.price)}
-                                            </p>
-                                            <button
-                                              type="button"
-                                              className="sm:mt-auto mt-4  inline-flex items-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                                            >
-                                              Buy Foil
-                                            </button>
-                                          </div>
-                                        )}
+                                return (
+                                  <li key={card.id} className="py-5">
+                                    <div className="md:flex md:space-x-6">
+                                      <img
+                                        style={{
+                                          height: 192,
+                                          width: 142,
+                                          borderRadius: "4.75% / 3.5%",
+                                        }}
+                                        src={card.imageURI ?? ""}
+                                        alt={card.name}
+                                      />
+                                      <div className="flex flex-col">
+                                        <h3 className="font-bold text-gray-800">
+                                          <a
+                                            target="_blank"
+                                            href={card.scryfallURI}
+                                            className="hover:underline focus:outline-none"
+                                            rel="noreferrer"
+                                          >
+                                            {card.name}
+                                          </a>
+                                        </h3>
+                                        <p className="text-sm text-gray-600 line-clamp-2">
+                                          {card.setName}
+                                        </p>
+
+                                        <div className="flex flex-row mt-4 space-x-4 flex-1">
+                                          {card.usd !== null && (
+                                            <div className="flex flex-col min-w-[85px]">
+                                              <p className="font-semibold text-gray-800">
+                                                Normal
+                                              </p>
+                                              <p className="text-gray-600">
+                                                {formatPrice(card.usd.price)}
+                                              </p>
+                                              {buyingCard?.cardID !==
+                                                card.id && (
+                                                <button
+                                                  onClick={() =>
+                                                    setBuyingCard({
+                                                      cardID: card.id,
+                                                      type: "NORMAL",
+                                                      quantity: 1,
+                                                    })
+                                                  }
+                                                  type="button"
+                                                  className="sm:mt-auto mt-4  inline-flex items-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                >
+                                                  Buy Normal
+                                                </button>
+                                              )}
+                                            </div>
+                                          )}
+                                          {card.usdFoil !== null && (
+                                            <div className="flex flex-col">
+                                              <p className="font-semibold text-gray-800">
+                                                Foil
+                                              </p>
+                                              <p className="text-gray-600">
+                                                {formatPrice(
+                                                  card.usdFoil.price
+                                                )}
+                                              </p>
+                                              {buyingCard?.cardID !==
+                                                card.id && (
+                                                <button
+                                                  onClick={() =>
+                                                    setBuyingCard({
+                                                      cardID: card.id,
+                                                      type: "FOIL",
+                                                      quantity: 1,
+                                                    })
+                                                  }
+                                                  type="button"
+                                                  className="sm:mt-auto mt-4 inline-flex items-center rounded border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                >
+                                                  Buy Foil
+                                                </button>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {buyingCard !== null &&
+                                          buyingCard.cardID === card.id && (
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:mt-auto mt-4 gap-4">
+                                              <div className="flex flex-row space-x-2 items-center">
+                                                <input
+                                                  autoFocus
+                                                  onChange={(e) => {
+                                                    setBuyingCard((prev) => {
+                                                      if (prev !== null) {
+                                                        return {
+                                                          ...prev,
+                                                          quantity: parseInt(
+                                                            e.target.value,
+                                                            10
+                                                          ),
+                                                        };
+                                                      } else {
+                                                        return prev;
+                                                      }
+                                                    });
+                                                  }}
+                                                  value={buyingCard.quantity}
+                                                  min={1}
+                                                  type="number"
+                                                  name="quantity"
+                                                  id="quantity"
+                                                  className="w-[60px] block rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                />
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  fill="none"
+                                                  viewBox="0 0 24 24"
+                                                  strokeWidth="1.5"
+                                                  stroke="currentColor"
+                                                  className="w-4 h-4"
+                                                >
+                                                  <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                  />
+                                                </svg>
+                                                <span className="text-gray-600">
+                                                  {formatPrice(buyingPrice)}
+                                                </span>
+                                                <span>=</span>
+                                                <span className="text-gray-800">
+                                                  {formatPrice(
+                                                    isNaN(buyingCard.quantity)
+                                                      ? 0
+                                                      : buyingPrice *
+                                                          buyingCard.quantity
+                                                  )}
+                                                </span>
+                                              </div>
+                                              <div className="space-x-4 sm:space-x-2">
+                                                <button
+                                                  disabled={isNaN(
+                                                    buyingCard.quantity
+                                                  )}
+                                                  type="button"
+                                                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                >
+                                                  Buy
+                                                </button>
+                                                <button
+                                                  onClick={() =>
+                                                    setBuyingCard(null)
+                                                  }
+                                                  className="text-sm text-blue-400 hover:underline hover:text-blue-300"
+                                                >
+                                                  Cancel
+                                                </button>
+                                              </div>
+                                            </div>
+                                          )}
                                       </div>
                                     </div>
-                                  </div>
-                                </li>
-                              ))}
+                                  </li>
+                                );
+                              })}
                             </ul>
                           )}
 

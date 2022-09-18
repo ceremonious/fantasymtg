@@ -102,7 +102,7 @@ const CreateLeaguePage = () => {
                   type="number"
                   name="startingAmount"
                   id="startingAmount"
-                  className="block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  className="appearance-none block w-full rounded-md border-gray-300 pl-7 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   placeholder="100"
                 />
               </div>
