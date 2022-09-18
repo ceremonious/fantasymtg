@@ -1,7 +1,8 @@
 import { ScaleIcon } from "@heroicons/react/24/outline";
 
 const cards = [
-  { name: "Account balance", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
+  { name: "Net Worth", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
+  { name: "Cash", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
 ];
 
 export default function StatsOverview() {

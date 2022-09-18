@@ -1,6 +1,6 @@
 import { createProtectedRouter } from "./context";
 import { z } from "zod";
-import { filterMap, pick } from "../../utils/tsUtil";
+import { filterMap, pick, prettyPrint } from "../../utils/tsUtil";
 import { ITransaction } from "../../domain/dbTypes";
 import jwt from "jsonwebtoken";
 import { CardPriceJWT } from "../../domain/miscTypes";
@@ -233,39 +233,47 @@ export const stocksRouter = createProtectedRouter()
       const url = `https://api.scryfall.com/cards/search?q=${input.searchTerm}&page=${input.page}&unique=prints`;
       const resp = await fetch(url);
       const data = await resp.json();
+      if (data.code === "not_found") {
+        return { cards: [], hasMore: false };
+      }
 
       const cards = filterMap(data.data, (card: any) => {
-        const usd = parseFloat(card.prices.usd);
-        const usdFoil = parseFloat(card.prices.usd_foil);
-        const hasPrice = usd !== NaN || usdFoil !== NaN;
+        const usd = parseFloat(card.prices?.usd);
+        const usdFoil = parseFloat(card.prices?.usd_foil);
+        const hasPrice = !isNaN(usd) || !isNaN(usdFoil);
 
         if (!card.digital && hasPrice) {
           const cardID = card.id;
           const cardName = card.name as string;
-          const usdJWT =
-            usd !== NaN
-              ? {
-                  id: cardID,
-                  name: cardName,
-                  cardType: "NORMAL" as const,
-                  price: usd * 100,
-                }
-              : null;
-          const usdFoilJWT =
-            usdFoil !== NaN
-              ? {
-                  id: cardID,
-                  name: cardName,
-                  cardType: "FOIL" as const,
-                  price: usdFoil * 100,
-                }
-              : null;
+          const setName = card.set_name as string;
+          let imageURIs = card.image_uris;
+          if (imageURIs === undefined && card.card_faces !== undefined) {
+            imageURIs = card.card_faces[0]?.image_uris;
+          }
+
+          const usdJWT = !isNaN(usd)
+            ? {
+                id: cardID,
+                name: cardName,
+                cardType: "NORMAL" as const,
+                price: usd * 100,
+              }
+            : null;
+          const usdFoilJWT = !isNaN(usdFoil)
+            ? {
+                id: cardID,
+                name: cardName,
+                cardType: "FOIL" as const,
+                price: usdFoil * 100,
+              }
+            : null;
 
           return {
             id: cardID,
             name: cardName,
+            setName,
             scryfallURI: card.scryfall_uri as string,
-            imageURI: card.image_uris.normal as string,
+            imageURI: imageURIs ? (imageURIs.normal as string) : null,
             usd:
               usdJWT !== null
                 ? { price: usdJWT.price, jwt: signJWT(usdJWT) }

@@ -36,3 +36,10 @@ export function filterMap<T, K>(
 export function prettyPrint(obj: unknown) {
   console.log(JSON.stringify(obj, null, 2));
 }
+
+export function formatPrice(amount: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "usd",
+  }).format(amount / 100);
+}

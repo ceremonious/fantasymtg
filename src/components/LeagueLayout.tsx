@@ -1,7 +1,8 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import BuyCardsPanel from "./BuyCardsPanel";
 
 const user = {
   name: "Tom Cook",
@@ -28,6 +29,8 @@ interface Props {
 }
 
 export default function LeagueLayout(props: Props) {
+  const [isBuyPanelOpen, setIsBuyPanelOpen] = useState(false);
+
   return (
     <>
       <div className="min-h-full">
@@ -213,13 +216,14 @@ export default function LeagueLayout(props: Props) {
                   type="button"
                   className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
                 >
-                  Add money
+                  Sell Cards
                 </button>
                 <button
+                  onClick={() => setIsBuyPanelOpen(true)}
                   type="button"
                   className="inline-flex items-center rounded-md border border-transparent bg-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
                 >
-                  Send money
+                  Buy Cards
                 </button>
               </div>
             </div>
@@ -228,6 +232,10 @@ export default function LeagueLayout(props: Props) {
 
         <main>{props.children}</main>
       </div>
+      <BuyCardsPanel
+        isOpen={isBuyPanelOpen}
+        onClose={() => setIsBuyPanelOpen(false)}
+      />
     </>
   );
 }
