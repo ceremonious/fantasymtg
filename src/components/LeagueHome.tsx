@@ -6,7 +6,7 @@ import {
   getPercentChange,
   mapArrayOn,
 } from "../utils/tsUtil";
-import PercentChangePill from "./PercentChangePill";
+import PercentChangePill from "./design/PercentChangePill";
 import StatsOverview from "./StatsOverview";
 
 interface Props {

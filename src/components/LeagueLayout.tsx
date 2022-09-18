@@ -3,6 +3,7 @@ import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import BuyCardsPanel from "./BuyCardsPanel";
 import { classNames } from "../utils/tsUtil";
+import Button from "./design/Button";
 
 const user = {
   name: "Tom Cook",
@@ -210,19 +211,16 @@ export default function LeagueLayout(props: Props) {
                 </div>
               </div>
               <div className="mt-6 flex space-x-3 md:mt-0 md:ml-4">
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
-                >
+                <Button onClick={() => void 0} color="white" size="md">
                   Sell Cards
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setIsBuyPanelOpen(true)}
-                  type="button"
-                  className="inline-flex items-center rounded-md border border-transparent bg-cyan-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  color="primary"
+                  size="md"
                 >
                   Buy Cards
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -3,7 +3,9 @@ import { Dialog, Transition } from "@headlessui/react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { trpc } from "../utils/trpc";
 import { formatPrice } from "../utils/tsUtil";
-import Spinner from "./Spinner";
+import Spinner from "./design/Spinner";
+import Button from "./design/Button";
+import CardImage from "./design/CardImage";
 
 interface Props {
   leagueMemberID: string;
@@ -178,14 +180,9 @@ export default function BuyCardsPanel(props: Props) {
                                 return (
                                   <li key={card.id} className="py-5">
                                     <div className="md:flex md:space-x-6">
-                                      <img
-                                        style={{
-                                          height: 192,
-                                          width: 142,
-                                          borderRadius: "4.75% / 3.5%",
-                                        }}
-                                        src={card.imageURI ?? ""}
-                                        alt={card.name}
+                                      <CardImage
+                                        imageURI={card.imageURI}
+                                        cardName={card.name}
                                       />
                                       <div className="flex flex-col">
                                         <h3 className="font-bold text-gray-800">
@@ -213,7 +210,8 @@ export default function BuyCardsPanel(props: Props) {
                                               </p>
                                               {buyingCard?.cardID !==
                                                 card.id && (
-                                                <button
+                                                <Button
+                                                  className="sm:mt-auto mt-6"
                                                   onClick={() =>
                                                     setBuyingCard({
                                                       cardID: card.id,
@@ -221,11 +219,9 @@ export default function BuyCardsPanel(props: Props) {
                                                       quantity: 1,
                                                     })
                                                   }
-                                                  type="button"
-                                                  className="sm:mt-auto mt-6 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                 >
                                                   Buy Normal
-                                                </button>
+                                                </Button>
                                               )}
                                             </div>
                                           )}
@@ -241,7 +237,7 @@ export default function BuyCardsPanel(props: Props) {
                                               </p>
                                               {buyingCard?.cardID !==
                                                 card.id && (
-                                                <button
+                                                <Button
                                                   onClick={() =>
                                                     setBuyingCard({
                                                       cardID: card.id,
@@ -249,11 +245,10 @@ export default function BuyCardsPanel(props: Props) {
                                                       quantity: 1,
                                                     })
                                                   }
-                                                  type="button"
-                                                  className="sm:mt-auto mt-6 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                  className="sm:mt-auto mt-6"
                                                 >
                                                   Buy Foil
-                                                </button>
+                                                </Button>
                                               )}
                                             </div>
                                           )}
@@ -324,7 +319,7 @@ export default function BuyCardsPanel(props: Props) {
                                                 </div>
                                               ) : (
                                                 <div className="space-x-4 sm:space-x-2">
-                                                  <button
+                                                  <Button
                                                     onClick={async () => {
                                                       if (
                                                         buyingPriceInfo !==
@@ -346,11 +341,9 @@ export default function BuyCardsPanel(props: Props) {
                                                     disabled={isNaN(
                                                       buyingCard.quantity
                                                     )}
-                                                    type="button"
-                                                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                   >
                                                     Buy
-                                                  </button>
+                                                  </Button>
                                                   <button
                                                     onClick={() =>
                                                       setBuyingCard(null)
