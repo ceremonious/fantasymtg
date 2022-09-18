@@ -1,11 +1,17 @@
 import { ScaleIcon } from "@heroicons/react/24/outline";
+import { formatPrice } from "../utils/tsUtil";
 
-const cards = [
-  { name: "Net Worth", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Cash", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-];
+interface Props {
+  netWorth: number;
+  cash: number;
+}
 
-export default function StatsOverview() {
+export default function StatsOverview(props: Props) {
+  const cards = [
+    { name: "Net Worth", icon: ScaleIcon, amount: props.netWorth },
+    { name: "Cash", icon: ScaleIcon, amount: props.cash },
+  ];
+
   return (
     <>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -34,7 +40,7 @@ export default function StatsOverview() {
                       </dt>
                       <dd>
                         <div className="text-lg font-medium text-gray-900">
-                          {card.amount}
+                          {formatPrice(card.amount)}
                         </div>
                       </dd>
                     </dl>

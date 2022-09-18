@@ -1,8 +1,8 @@
-/* This example requires Tailwind CSS v2.0+ */
 import { Fragment, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import BuyCardsPanel from "./BuyCardsPanel";
+import { classNames } from "../utils/tsUtil";
 
 const user = {
   name: "Tom Cook",
@@ -20,12 +20,9 @@ const userNavigation = [
   { name: "Sign out", href: "#" },
 ];
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
 interface Props {
   leagueMemberID: string | null;
+  leagueName: string;
   children: JSX.Element;
 }
 
@@ -206,7 +203,7 @@ export default function LeagueLayout(props: Props) {
                         alt=""
                       />
                       <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
-                        [League Name]
+                        {props.leagueName}
                       </h1>
                     </div>
                   </div>

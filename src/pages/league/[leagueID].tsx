@@ -36,7 +36,10 @@ const LeaguePage = (props: Props) => {
     const leagueMemberID = data.members.find((x) => x.isSelf)?.id ?? null;
 
     return (
-      <LeagueLayout leagueMemberID={leagueMemberID}>
+      <LeagueLayout
+        leagueMemberID={leagueMemberID}
+        leagueName={data.league.name}
+      >
         <LeagueHome pageData={data} />
       </LeagueLayout>
     );

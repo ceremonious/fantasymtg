@@ -256,3 +256,42 @@ export function getCardsWithPrices(
     };
   });
 }
+
+export function getPortfolioWithPrices(
+  portfolio: Portfolio,
+  cardPricesMap: Record<
+    string,
+    { name: string; amountNormal?: number; amountFoil?: number }
+  >
+): Portfolio & {
+  cards: {
+    card: { id: string; type: "NORMAL" | "FOIL"; price: number; name: string };
+    quantity: number;
+  }[];
+  netWorth: number;
+} {
+  const cardsWithPrices = portfolio.cards.map((c) => {
+    const cardPrice = cardPricesMap[c.card.id];
+    if (c.card.type === "NORMAL") {
+      const price = cardPrice?.amountNormal ?? 0;
+      const name = cardPrice?.name ?? "";
+      return { ...c, card: { ...c.card, price, name } };
+    } else if (c.card.type === "FOIL") {
+      const price = cardPrice?.amountFoil ?? 0;
+      const name = cardPrice?.name ?? "";
+      return { ...c, card: { ...c.card, price, name } };
+    } else {
+      assertNever(c.card.type);
+    }
+  });
+  const totalCardVal = cardsWithPrices.reduce(
+    (prev, curr) => prev + curr.card.price * curr.quantity,
+    0
+  );
+
+  return {
+    ...portfolio,
+    cards: cardsWithPrices,
+    netWorth: portfolio.cash + totalCardVal,
+  };
+}

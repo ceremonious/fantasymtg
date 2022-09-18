@@ -43,3 +43,39 @@ export function formatPrice(amount: number) {
     currency: "usd",
   }).format(amount / 100);
 }
+
+export function mapArrayOn<T, K extends keyof T>(objects: T[], key: K) {
+  return objects.reduce<Record<string | number, T>>((map, obj) => {
+    const objKey = obj[key];
+    if (objKey !== null && objKey !== undefined) {
+      if (typeof objKey !== "string" && typeof objKey !== "number") {
+        throw Error("Must index on string or number");
+      }
+      map[objKey] = obj;
+    }
+    return map;
+  }, {});
+}
+
+export function getMax<T>(
+  arr: T[],
+  compare: (a: T, b: T) => number
+): T | undefined {
+  let max: T | undefined;
+  arr.forEach((x) => {
+    if (max === undefined) {
+      max = x;
+    } else if (compare(x, max) >= 0) {
+      max = x;
+    }
+  });
+  return max;
+}
+
+export function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+export function getPercentChange(oldVal: number, newVal: number) {
+  return Math.round(((newVal - oldVal) / oldVal) * 100);
+}
