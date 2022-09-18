@@ -1,12 +1,8 @@
-// src/server/router/context.ts
 import * as trpc from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { prisma } from "../db/client";
 import jwt from "jsonwebtoken";
 
-/**
- * Replace this with an object if you want to pass things to createContextInner
- */
 type CreateContextOptions = {
   authCookie: string | undefined;
 };

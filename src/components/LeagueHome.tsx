@@ -1,8 +1,6 @@
-import { ArrowUpIcon } from "@heroicons/react/24/outline";
 import { GetLeagueHomePage } from "../domain/apiTypes";
 import { getPortfolioWithPrices } from "../domain/transactions";
 import {
-  classNames,
   formatPrice,
   getMax,
   getPercentChange,
@@ -106,8 +104,9 @@ export default function LeagueHome(props: Props) {
                     <span className="ml-auto font-medium text-gray-900">
                       {formatPrice(member.netWorth)}
                     </span>
-
-                    <PercentChangePill percentChange={member.percentChange} />
+                    {member.percentChange !== null && (
+                      <PercentChangePill percentChange={member.percentChange} />
+                    )}
                   </span>
                 </a>
               </li>
