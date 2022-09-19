@@ -6,11 +6,13 @@ import { formatPrice } from "../utils/tsUtil";
 import Spinner from "./design/Spinner";
 import Button from "./design/Button";
 import CardImage from "./design/CardImage";
+import XIcon from "./design/XIcon";
 
 interface Props {
   leagueMemberID: string;
   isOpen: boolean;
   onClose: () => void;
+  openSellCardsModal: () => void;
 }
 
 export default function BuyCardsPanel(props: Props) {
@@ -28,7 +30,10 @@ export default function BuyCardsPanel(props: Props) {
     type: "NORMAL" | "FOIL";
     quantity: number;
   } | null>(null);
-  const buyCard = trpc.useMutation(["stocks.buyCard"]);
+  const trpcUtil = trpc.useContext();
+  const buyCard = trpc.useMutation(["stocks.buyCard"], {
+    onSuccess: () => trpcUtil.invalidateQueries("stocks.leagueHome"),
+  });
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -256,7 +261,7 @@ export default function BuyCardsPanel(props: Props) {
 
                                         {buyingCard !== null &&
                                           buyingCard.cardID === card.id && (
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:mt-auto mt-6 gap-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:mt-auto mt-6 gap-4 sm:gap-8">
                                               <div className="flex flex-row space-x-2 items-center">
                                                 <input
                                                   autoFocus
@@ -282,20 +287,7 @@ export default function BuyCardsPanel(props: Props) {
                                                   id="quantity"
                                                   className="w-[60px] block rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                                 />
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  fill="none"
-                                                  viewBox="0 0 24 24"
-                                                  strokeWidth="1.5"
-                                                  stroke="currentColor"
-                                                  className="w-4 h-4"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                  />
-                                                </svg>
+                                                <XIcon />
                                                 <span className="text-gray-600">
                                                   {formatPrice(buyingPrice)}
                                                 </span>
@@ -320,6 +312,7 @@ export default function BuyCardsPanel(props: Props) {
                                               ) : (
                                                 <div className="space-x-4 sm:space-x-2">
                                                   <Button
+                                                    color="primary"
                                                     onClick={async () => {
                                                       if (
                                                         buyingPriceInfo !==
@@ -406,7 +399,10 @@ export default function BuyCardsPanel(props: Props) {
                                 d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                               />
                             </svg>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            <h3
+                              className="mt-2 text-sm font-medium text-gray-900"
+                              onClick={() => props.openSellCardsModal()}
+                            >
                               Place your Bets
                             </h3>
                             <p className="mt-1 text-sm text-gray-500">

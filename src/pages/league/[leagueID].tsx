@@ -2,7 +2,9 @@ import { GetServerSideProps } from "next";
 import React from "react";
 import LeagueHome from "../../components/LeagueHome";
 import LeagueLayout from "../../components/LeagueLayout";
+import { enrichPortfolioWithCardData } from "../../domain/transactions";
 import { trpc } from "../../utils/trpc";
+import { mapArrayOn } from "../../utils/tsUtil";
 
 interface Props {
   leagueID: string;
@@ -34,13 +36,29 @@ const LeaguePage = (props: Props) => {
     return <p>Could not find league</p>;
   } else {
     const leagueMemberID = data.members.find((x) => x.isSelf)?.id ?? null;
+    const cardPricesMap = mapArrayOn(data.cards, "id");
+    const enrichedPortfolios = new Map(
+      Array.from(data.portfolios.entries()).map(([key, portfolio]) => [
+        key,
+        enrichPortfolioWithCardData(portfolio, cardPricesMap),
+      ])
+    );
+    const currLeagueMember = data.members.find((x) => x.isSelf);
+    const currPortfolio =
+      currLeagueMember !== undefined
+        ? enrichedPortfolios.get(currLeagueMember.id)
+        : undefined;
 
     return (
       <LeagueLayout
-        leagueMemberID={leagueMemberID}
+        currMember={
+          leagueMemberID !== null && currPortfolio !== undefined
+            ? { id: leagueMemberID, cards: currPortfolio.cards }
+            : null
+        }
         leagueName={data.league.name}
       >
-        <LeagueHome pageData={data} />
+        <LeagueHome pageData={data} enrichedPortfolios={enrichedPortfolios} />
       </LeagueLayout>
     );
   }

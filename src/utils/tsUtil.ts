@@ -79,3 +79,7 @@ export function classNames(...classes: string[]) {
 export function getPercentChange(oldVal: number, newVal: number) {
   return Math.round(((newVal - oldVal) / oldVal) * 100);
 }
+
+export function pluralize(num: number, singular: string, plural: string) {
+  return num === 1 ? `${num} ${singular}` : `${num} ${plural}`;
+}

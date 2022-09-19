@@ -1,7 +1,7 @@
 import { Card, CardPrice } from "@prisma/client";
-import { assertNever, setToNoon } from "../utils/tsUtil";
+import { assertNever, pick, setToNoon } from "../utils/tsUtil";
 import { ITransaction } from "./dbTypes";
-import { NetWorthOverTime, Portfolio } from "./miscTypes";
+import { EnrichedPortfolio, NetWorthOverTime, Portfolio } from "./miscTypes";
 import addDays from "date-fns/addDays";
 
 function updatePortfolio(
@@ -257,29 +257,28 @@ export function getCardsWithPrices(
   });
 }
 
-export function getPortfolioWithPrices(
+export function enrichPortfolioWithCardData(
   portfolio: Portfolio,
   cardPricesMap: Record<
     string,
-    { name: string; amountNormal?: number; amountFoil?: number }
+    Card & {
+      amountNormal?: number;
+      amountFoil?: number;
+    }
   >
-): Portfolio & {
-  cards: {
-    card: { id: string; type: "NORMAL" | "FOIL"; price: number; name: string };
-    quantity: number;
-  }[];
-  netWorth: number;
-} {
+): EnrichedPortfolio {
   const cardsWithPrices = portfolio.cards.map((c) => {
     const cardPrice = cardPricesMap[c.card.id];
+    const cardInfo =
+      cardPrice !== undefined
+        ? pick(cardPrice, "name", "imageURI", "scryfallURI", "setName")
+        : null;
     if (c.card.type === "NORMAL") {
       const price = cardPrice?.amountNormal ?? 0;
-      const name = cardPrice?.name ?? "";
-      return { ...c, card: { ...c.card, price, name } };
+      return { ...c, card: { ...c.card, price, cardInfo } };
     } else if (c.card.type === "FOIL") {
       const price = cardPrice?.amountFoil ?? 0;
-      const name = cardPrice?.name ?? "";
-      return { ...c, card: { ...c.card, price, name } };
+      return { ...c, card: { ...c.card, price, cardInfo } };
     } else {
       assertNever(c.card.type);
     }

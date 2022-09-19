@@ -25,6 +25,24 @@ function convertTransactions(transactions: Transaction[]) {
   return transactions as ITransaction[];
 }
 
+function parseScryfallCard(scryfallCard: any) {
+  const cardID = scryfallCard.id as string;
+  const cardName = scryfallCard.name as string;
+  const setName = scryfallCard.set_name as string;
+  let imageURIs = scryfallCard.image_uris;
+  if (imageURIs === undefined && scryfallCard.card_faces !== undefined) {
+    imageURIs = scryfallCard.card_faces[0]?.image_uris;
+  }
+
+  return {
+    id: cardID,
+    name: cardName,
+    setName,
+    scryfallURI: scryfallCard.scryfall_uri as string,
+    imageURI: imageURIs ? (imageURIs.normal as string) : null,
+  };
+}
+
 async function authenticateLeagueMember(
   prisma: IPrismaClient,
   accountID: string,
@@ -198,23 +216,23 @@ export const stocksRouter = createProtectedRouter()
     async resolve({ input }) {
       const url = `https://api.scryfall.com/cards/${input.cardID}`;
       const resp = await fetch(url);
-      const data = await resp.json();
-      const card = data.data;
+      const card = await resp.json();
 
-      const rawPrice = input.cardType === "NORMAL" ? card.usd : card.usd_foil;
+      const rawPrice =
+        input.cardType === "NORMAL" ? card.prices.usd : card.prices.usd_foil;
       const parsedPrice = parseFloat(rawPrice);
-      if (parsedPrice === NaN) {
+      if (isNaN(parsedPrice)) {
         throw new trpc.TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Could not get card price",
         });
       }
       const price = parsedPrice * 100;
+      const parsedScryfallCard = parseScryfallCard(card);
 
       const jwt = signJWT({
-        id: input.cardID,
+        ...parsedScryfallCard,
         cardType: input.cardType,
-        name: card.name,
         price,
       });
 
@@ -243,37 +261,25 @@ export const stocksRouter = createProtectedRouter()
         const hasPrice = !isNaN(usd) || !isNaN(usdFoil);
 
         if (!card.digital && hasPrice) {
-          const cardID = card.id;
-          const cardName = card.name as string;
-          const setName = card.set_name as string;
-          let imageURIs = card.image_uris;
-          if (imageURIs === undefined && card.card_faces !== undefined) {
-            imageURIs = card.card_faces[0]?.image_uris;
-          }
+          const parsedScryfallCard = parseScryfallCard(card);
 
           const usdJWT = !isNaN(usd)
             ? {
-                id: cardID,
-                name: cardName,
+                ...parsedScryfallCard,
                 cardType: "NORMAL" as const,
                 price: usd * 100,
               }
             : null;
           const usdFoilJWT = !isNaN(usdFoil)
             ? {
-                id: cardID,
-                name: cardName,
+                ...parsedScryfallCard,
                 cardType: "FOIL" as const,
                 price: usdFoil * 100,
               }
             : null;
 
           return {
-            id: cardID,
-            name: cardName,
-            setName,
-            scryfallURI: card.scryfall_uri as string,
-            imageURI: imageURIs ? (imageURIs.normal as string) : null,
+            ...parsedScryfallCard,
             usd:
               usdJWT !== null
                 ? { price: usdJWT.price, jwt: signJWT(usdJWT) }
@@ -306,7 +312,8 @@ export const stocksRouter = createProtectedRouter()
         input.leagueMemberID
       );
 
-      const { id, name, cardType, price } = verifyCardJWT(input.token);
+      const { id, name, cardType, price, scryfallURI, setName, imageURI } =
+        verifyCardJWT(input.token);
       const totalAmount = price * input.quantity;
 
       const portfolio = await getLeagueMemberPortfolio(
@@ -333,8 +340,8 @@ export const stocksRouter = createProtectedRouter()
         leagueMemberID: input.leagueMemberID,
       };
       await ctx.prisma.card.upsert({
-        create: { id, name },
-        update: { name },
+        create: { id, name, scryfallURI, setName, imageURI },
+        update: { name, scryfallURI, setName, imageURI },
         where: { id },
       });
       await ctx.prisma.transaction.create({ data: transaction });
@@ -348,7 +355,6 @@ export const stocksRouter = createProtectedRouter()
     input: z.object({
       leagueMemberID: z.string(),
       token: z.string(),
-      description: z.string(),
       quantity: z.number().positive(),
     }),
     async resolve({ input, ctx }) {
@@ -363,7 +369,8 @@ export const stocksRouter = createProtectedRouter()
         input.leagueMemberID
       );
 
-      const { id, name, cardType, price } = verifyCardJWT(input.token);
+      const { id, name, cardType, price, scryfallURI, setName, imageURI } =
+        verifyCardJWT(input.token);
 
       const portfolio = await getLeagueMemberPortfolio(
         ctx.prisma,
@@ -385,7 +392,7 @@ export const stocksRouter = createProtectedRouter()
 
       const transaction: ITransaction = {
         leagueID: leagueMember.leagueID,
-        description: input.description,
+        description: "",
         amount: price,
         quantity: input.quantity,
         cardID: id,
@@ -394,12 +401,12 @@ export const stocksRouter = createProtectedRouter()
         createdAt: new Date(),
         leagueMemberID: input.leagueMemberID,
       };
-      await ctx.prisma.transaction.create({ data: transaction });
       await ctx.prisma.card.upsert({
-        create: { id, name },
-        update: { name },
+        create: { id, name, scryfallURI, setName, imageURI },
+        update: { name, scryfallURI, setName, imageURI },
         where: { id },
       });
+      await ctx.prisma.transaction.create({ data: transaction });
 
       return {
         status: "SUCCESS",

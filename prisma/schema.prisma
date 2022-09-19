@@ -41,6 +41,9 @@ model LeagueMember {
 model Card {
     id String @id
     name String
+    setName String
+    scryfallURI String
+    imageURI String?
 
     transactions Transaction[]
     cardPrices CardPrice[]

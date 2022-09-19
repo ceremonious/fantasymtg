@@ -2,8 +2,10 @@ import { Fragment, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import BuyCardsPanel from "./BuyCardsPanel";
-import { classNames } from "../utils/tsUtil";
+import { classNames, filterMap, pick } from "../utils/tsUtil";
 import Button from "./design/Button";
+import SellCardsModal from "./SellCardsModal";
+import { EnrichedPortfolio } from "../domain/miscTypes";
 
 const user = {
   name: "Tom Cook",
@@ -22,13 +24,17 @@ const userNavigation = [
 ];
 
 interface Props {
-  leagueMemberID: string | null;
+  currMember: {
+    id: string;
+    cards: EnrichedPortfolio["cards"];
+  } | null;
   leagueName: string;
   children: JSX.Element;
 }
 
 export default function LeagueLayout(props: Props) {
   const [isBuyPanelOpen, setIsBuyPanelOpen] = useState(false);
+  const [isSellModalOpen, setIsSellModalOpen] = useState(false);
 
   return (
     <>
@@ -211,7 +217,11 @@ export default function LeagueLayout(props: Props) {
                 </div>
               </div>
               <div className="mt-6 flex space-x-3 md:mt-0 md:ml-4">
-                <Button onClick={() => void 0} color="white" size="md">
+                <Button
+                  onClick={() => setIsSellModalOpen(true)}
+                  color="white"
+                  size="md"
+                >
                   Sell Cards
                 </Button>
                 <Button
@@ -228,11 +238,28 @@ export default function LeagueLayout(props: Props) {
 
         <main>{props.children}</main>
       </div>
-      {props.leagueMemberID !== null && (
+      {props.currMember !== null && (
         <BuyCardsPanel
-          leagueMemberID={props.leagueMemberID}
+          openSellCardsModal={() => setIsSellModalOpen(true)}
+          leagueMemberID={props.currMember.id}
           isOpen={isBuyPanelOpen}
           onClose={() => setIsBuyPanelOpen(false)}
+        />
+      )}
+      {props.currMember !== null && (
+        <SellCardsModal
+          leagueMemberID={props.currMember.id}
+          isOpen={isSellModalOpen}
+          onClose={() => setIsSellModalOpen(false)}
+          cards={filterMap(props.currMember.cards, (card) => {
+            if (card.card.cardInfo !== null) {
+              return {
+                ...card.card.cardInfo,
+                ...pick(card.card, "id", "price", "type"),
+                quantity: card.quantity,
+              };
+            }
+          })}
         />
       )}
     </>

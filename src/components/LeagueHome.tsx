@@ -1,5 +1,5 @@
 import { GetLeagueHomePage } from "../domain/apiTypes";
-import { getPortfolioWithPrices } from "../domain/transactions";
+import { EnrichedPortfolio } from "../domain/miscTypes";
 import {
   formatPrice,
   getMax,
@@ -11,31 +11,25 @@ import StatsOverview from "./StatsOverview";
 
 interface Props {
   pageData: GetLeagueHomePage;
+  enrichedPortfolios: Map<string, EnrichedPortfolio>;
 }
 
 export default function LeagueHome(props: Props) {
   //TODO: maybe update shape of api to avoid weird map/arr conversions
   const currLeagueMember = props.pageData.members.find((x) => x.isSelf);
-  const cardPricesMap = mapArrayOn(props.pageData.cards, "id");
-  const portfoliosWithNetWorth = new Map(
-    Array.from(props.pageData.portfolios.entries()).map(([key, portfolio]) => [
-      key,
-      getPortfolioWithPrices(portfolio, cardPricesMap),
-    ])
-  );
   const currPortfolio =
     currLeagueMember !== undefined
-      ? portfoliosWithNetWorth.get(currLeagueMember.id)
+      ? props.enrichedPortfolios.get(currLeagueMember.id)
       : undefined;
   const leagueMemberMap = mapArrayOn(props.pageData.members, "id");
-  const leaderBoard = Array.from(portfoliosWithNetWorth.entries())
+  const leaderBoard = Array.from(props.enrichedPortfolios.entries())
     .map(([leagueMemberID, portfolio]) => {
       const displayName = leagueMemberMap[leagueMemberID]?.displayName ?? "";
       const maxCard = getMax(
         portfolio.cards,
         (a, b) => a.card.price * a.quantity - b.card.price * b.quantity
       );
-      const maxCardName = maxCard?.card.name ?? "";
+      const maxCardName = maxCard?.card.cardInfo?.name ?? "";
 
       let percentChange: number | null = null;
       let prevNetWorth: number | undefined;
