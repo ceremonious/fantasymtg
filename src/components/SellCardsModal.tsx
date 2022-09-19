@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import CardImage from "./design/CardImage";
 import { formatPrice, pluralize } from "../utils/tsUtil";
 import Button from "./design/Button";
@@ -289,25 +289,12 @@ export default function SellCardsModal(props: Props) {
 
                     {props.cards.length === 0 && (
                       <div className="text-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="mx-auto h-12 w-12 text-gray-400"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
+                        <XCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900">
-                          Place your Bets
+                          No Cards to Sell
                         </h3>
                         <p className="mt-1 text-sm text-gray-500">
-                          Search for cards to add to your portfolio.
+                          Maybe try buying some cards first.
                         </p>
                       </div>
                     )}

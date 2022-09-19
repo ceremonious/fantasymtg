@@ -1,7 +1,16 @@
-export default function Spinner() {
+import { classNames } from "../../utils/tsUtil";
+
+interface Props {
+  className?: string;
+}
+
+export default function Spinner(props: Props) {
   return (
     <svg
-      className="animate-spin h-5 w-5 text-gray-400"
+      className={classNames(
+        "animate-spin h-5 w-5 text-gray-400",
+        props.className ?? ""
+      )}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

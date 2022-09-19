@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
 import React from "react";
+import Spinner from "../../components/design/Spinner";
 import LeagueHome from "../../components/LeagueHome";
 import LeagueLayout from "../../components/LeagueLayout";
 import { enrichPortfolioWithCardData } from "../../domain/transactions";
@@ -28,7 +29,13 @@ const LeaguePage = (props: Props) => {
 
   if (data === undefined) {
     if (isLoading) {
-      return <p>Loading</p>;
+      return (
+        <LeagueLayout currMember={null} leagueName="">
+          <div className="w-full flex justify-center">
+            <Spinner className="mt-16 h-16 w-16" />
+          </div>
+        </LeagueLayout>
+      );
     } else {
       return <p>Could not find league</p>;
     }

@@ -1,4 +1,4 @@
-import { ScaleIcon } from "@heroicons/react/24/outline";
+import { ChartBarIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { formatPrice } from "../utils/tsUtil";
 
 interface Props {
@@ -8,8 +8,8 @@ interface Props {
 
 export default function StatsOverview(props: Props) {
   const cards = [
-    { name: "Net Worth", icon: ScaleIcon, amount: props.netWorth },
-    { name: "Cash", icon: ScaleIcon, amount: props.cash },
+    { name: "Net Worth", icon: ChartBarIcon, amount: props.netWorth },
+    { name: "Cash", icon: CurrencyDollarIcon, amount: props.cash },
   ];
 
   return (
