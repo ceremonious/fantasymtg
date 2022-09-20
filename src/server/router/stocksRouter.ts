@@ -173,6 +173,7 @@ export const stocksRouter = createProtectedRouter()
 
       const portfolios = calculateLeaguePortfolios(
         league.startingAmount,
+        leagueMembers.map((x) => x.id),
         convertTransactions(transactions)
       );
       const cardIDs = getCardIDsFromPortfolios(portfolios);

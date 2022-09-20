@@ -65,6 +65,7 @@ function updatePortfolio(
 
 export function calculateLeaguePortfolios(
   startingAmount: number,
+  leagueMemberIDs: string[],
   allTransactions: ITransaction[]
 ): Map<string, Portfolio> {
   const portfolios = new Map<string, Portfolio>();
@@ -77,6 +78,12 @@ export function calculateLeaguePortfolios(
     };
     const newPortfolio = updatePortfolio(currPortfolio, transaction);
     portfolios.set(memberID, newPortfolio);
+  }
+  for (const leagueMemberID of leagueMemberIDs) {
+    const existingVal = portfolios.get(leagueMemberID);
+    if (existingVal === undefined) {
+      portfolios.set(leagueMemberID, { cash: startingAmount, cards: [] });
+    }
   }
 
   return portfolios;
