@@ -16,7 +16,7 @@ export default function SingleCardPage(props: {
         </h2>
         {props.helpText !== undefined && (
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-300">
-            {props.header}
+            {props.helpText}
           </p>
         )}
       </div>
