@@ -71,10 +71,7 @@ export default function LeagueHome(props: Props) {
         </h2>
 
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <ul
-            role="list"
-            className="mt-2 divide-y divide-gray-200 overflow-hidden shadow"
-          >
+          <ul role="list" className="mt-2 space-y-1 overflow-hidden shadow">
             {leaderBoard.map((member, index) => (
               <li key={member.id}>
                 <a
