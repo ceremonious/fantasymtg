@@ -1,4 +1,6 @@
 import { CountryCode, getCountries } from "libphonenumber-js";
+import { useEffect, useRef } from "react";
+import { focusRef } from "../utils/tsUtil";
 import Input from "./design/Input";
 
 interface Props {
@@ -9,6 +11,12 @@ interface Props {
 }
 
 export default function PhoneNumberInput(props: Props) {
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    focusRef(ref);
+  }, [ref]);
+
   return (
     <div>
       <label
@@ -38,6 +46,7 @@ export default function PhoneNumberInput(props: Props) {
           </select>
         </div>
         <Input
+          innerRef={ref}
           value={props.phone}
           onChange={(e) => props.setPhone(e.target.value)}
           type="text"
