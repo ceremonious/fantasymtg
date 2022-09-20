@@ -25,6 +25,7 @@ export default function LeagueHome(props: Props) {
   const leaderBoard = Array.from(props.enrichedPortfolios.entries())
     .map(([leagueMemberID, portfolio]) => {
       const displayName = leagueMemberMap[leagueMemberID]?.displayName ?? "";
+      const profilePic = leagueMemberMap[leagueMemberID]?.profilePic ?? "";
       const maxCard = getMax(
         portfolio.cards,
         (a, b) => a.card.price * a.quantity - b.card.price * b.quantity
@@ -47,6 +48,7 @@ export default function LeagueHome(props: Props) {
       return {
         id: leagueMemberID,
         displayName,
+        profilePic,
         maxCardName,
         netWorth: portfolio.netWorth,
         percentChange,
@@ -84,7 +86,7 @@ export default function LeagueHome(props: Props) {
                     <span className="font-bold text-gray-900">{index + 1}</span>
                     <img
                       className="ml-8 h-10 w-10 rounded-full sm:block"
-                      src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.6&w=256&h=256&q=80"
+                      src={member.profilePic}
                       alt=""
                     />
                     <span className="flex flex-col">

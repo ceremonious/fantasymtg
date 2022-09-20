@@ -5,7 +5,7 @@ import LeagueHome from "../../components/LeagueHome";
 import LeagueLayout from "../../components/LeagueLayout";
 import { enrichPortfolioWithCardData } from "../../domain/transactions";
 import { trpc } from "../../utils/trpc";
-import { mapArrayOn } from "../../utils/tsUtil";
+import { mapArrayOn, pick } from "../../utils/tsUtil";
 
 interface Props {
   leagueID: string;
@@ -30,7 +30,7 @@ const LeaguePage = (props: Props) => {
   if (data === undefined) {
     if (isLoading) {
       return (
-        <LeagueLayout currMember={null} leagueName="">
+        <LeagueLayout currMember={null} league={null}>
           <div className="w-full flex justify-center">
             <Spinner className="mt-16 h-16 w-16" />
           </div>
@@ -59,11 +59,14 @@ const LeaguePage = (props: Props) => {
     return (
       <LeagueLayout
         currMember={
-          leagueMemberID !== null && currPortfolio !== undefined
-            ? { id: leagueMemberID, cards: currPortfolio.cards }
+          currLeagueMember !== undefined && currPortfolio !== undefined
+            ? {
+                ...pick(currLeagueMember, "id", "displayName", "profilePic"),
+                cards: currPortfolio.cards,
+              }
             : null
         }
-        leagueName={data.league.name}
+        league={data.league}
       >
         <LeagueHome pageData={data} enrichedPortfolios={enrichedPortfolios} />
       </LeagueLayout>

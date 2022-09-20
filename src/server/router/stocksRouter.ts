@@ -14,6 +14,7 @@ import {
 import { Prisma, PrismaClient, Transaction } from "@prisma/client";
 import { GetLeagueHomePage } from "../../domain/apiTypes";
 import * as trpc from "@trpc/server";
+import { getRandomProfileURL } from "../../utils/pfp";
 
 type IPrismaClient = PrismaClient<
   Prisma.PrismaClientOptions,
@@ -197,10 +198,11 @@ export const stocksRouter = createProtectedRouter()
       );
 
       return {
-        league: pick(league, "name"),
+        league: { name: league.name, logo: getRandomProfileURL(league.id) },
         members: leagueMembers.map((x) => ({
           ...pick(x, "id", "displayName", "isOwner"),
           isSelf: x.accountID === ctx.accountID,
+          profilePic: getRandomProfileURL(x.id),
         })),
         portfolios,
         netWorthOverTime,

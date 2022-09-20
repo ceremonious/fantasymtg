@@ -6,13 +6,8 @@ import { classNames, filterMap, pick } from "../utils/tsUtil";
 import Button from "./design/Button";
 import SellCardsModal from "./SellCardsModal";
 import { EnrichedPortfolio } from "../domain/miscTypes";
+import { League } from "@prisma/client";
 
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
 const navigation = [
   { name: "Home", href: "#", current: true },
   { name: "Transaction History", href: "#", current: false },
@@ -26,9 +21,11 @@ const userNavigation = [
 interface Props {
   currMember: {
     id: string;
+    displayName: string;
+    profilePic: string;
     cards: EnrichedPortfolio["cards"];
   } | null;
-  leagueName: string;
+  league: (Pick<League, "name"> & { logo: string }) | null;
   children: JSX.Element;
 }
 
@@ -79,11 +76,13 @@ export default function LeagueLayout(props: Props) {
                         <div>
                           <Menu.Button className="flex max-w-xs items-center rounded-full bg-gray-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                             <span className="sr-only">Open user menu</span>
-                            <img
-                              className="h-8 w-8 rounded-full"
-                              src={user.imageUrl}
-                              alt=""
-                            />
+                            {props.currMember !== null && (
+                              <img
+                                className="h-8 w-8 rounded-full"
+                                src={props.currMember.profilePic}
+                                alt=""
+                              />
+                            )}
                           </Menu.Button>
                         </div>
                         <Transition
@@ -156,23 +155,23 @@ export default function LeagueLayout(props: Props) {
                   ))}
                 </div>
                 <div className="border-t border-gray-700 pt-4 pb-3">
-                  <div className="flex items-center px-5">
-                    <div className="flex-shrink-0">
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={user.imageUrl}
-                        alt=""
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-white">
-                        {user.name}
+                  {props.currMember !== null && (
+                    <div className="flex items-center px-5">
+                      <div className="flex-shrink-0">
+                        <img
+                          className="h-10 w-10 rounded-full"
+                          src={props.currMember.profilePic}
+                          alt="User profile picture"
+                        />
                       </div>
-                      <div className="text-sm font-medium text-gray-400">
-                        {user.email}
+                      <div className="ml-3">
+                        <div className="text-base font-medium text-white">
+                          {props.currMember.displayName}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
+
                   <div className="mt-3 space-y-1 px-2">
                     {userNavigation.map((item) => (
                       <Disclosure.Button
@@ -195,26 +194,27 @@ export default function LeagueLayout(props: Props) {
           <div className="mx-auto max-w-6xl py-4 px-4 sm:px-6 lg:px-8">
             <div className="py-6 md:flex md:items-center md:justify-between">
               <div className="min-w-0 flex-1">
-                {/* Profile */}
-                <div className="flex items-center">
-                  <img
-                    className="hidden h-16 w-16 rounded-full sm:block"
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.6&w=256&h=256&q=80"
-                    alt=""
-                  />
-                  <div>
-                    <div className="flex items-center">
-                      <img
-                        className="h-16 w-16 rounded-full sm:hidden"
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2.6&w=256&h=256&q=80"
-                        alt=""
-                      />
-                      <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
-                        {props.leagueName}
-                      </h1>
+                {props.league !== null && (
+                  <div className="flex items-center">
+                    <img
+                      className="hidden h-16 w-16 rounded-full sm:block"
+                      src={props.league.logo}
+                      alt="League logo"
+                    />
+                    <div>
+                      <div className="flex items-center">
+                        <img
+                          className="h-16 w-16 rounded-full sm:hidden"
+                          src={props.league.logo}
+                          alt="League logo"
+                        />
+                        <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
+                          {props.league.name}
+                        </h1>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
               <div className="mt-6 flex space-x-3 md:mt-0 md:ml-4">
                 <Button
