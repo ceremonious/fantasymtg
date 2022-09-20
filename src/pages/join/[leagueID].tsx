@@ -2,6 +2,7 @@ import { GetServerSideProps } from "next";
 import React, { useState } from "react";
 import LoginForm from "../../components/LoginForm";
 import JoinLeagueForm from "../../components/JoinLeagueForm";
+import SingleCardPage from "../../components/SingleCardPage";
 
 type Props =
   | {
@@ -26,31 +27,16 @@ const JoinLeaguePage = (props: Props) => {
   }
 
   return (
-    <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <img
-          className="mx-auto h-12 w-auto"
-          src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-          alt="Your Company"
-        />
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          Join {props.league.name}
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Created by {props.creatorName}
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {props.isAuthed || isLoggedIn ? (
-            <JoinLeagueForm leagueID={props.league.id} />
-          ) : (
-            <LoginForm onSuccess={() => setIsLoggedIn(true)} />
-          )}
-        </div>
-      </div>
-    </div>
+    <SingleCardPage
+      header={`Join ${props.league.name}`}
+      helpText={`Created by ${props.creatorName}`}
+    >
+      {props.isAuthed || isLoggedIn ? (
+        <JoinLeagueForm leagueID={props.league.id} />
+      ) : (
+        <LoginForm onSuccess={() => setIsLoggedIn(true)} />
+      )}
+    </SingleCardPage>
   );
 };
 

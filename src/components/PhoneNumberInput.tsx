@@ -1,4 +1,5 @@
 import { CountryCode, getCountries } from "libphonenumber-js";
+import Input from "./design/Input";
 
 interface Props {
   country: CountryCode;
@@ -27,7 +28,7 @@ export default function PhoneNumberInput(props: Props) {
             id="country"
             name="country"
             autoComplete="country"
-            className="h-full rounded-md border-transparent bg-transparent py-0 pl-3 pr-7 text-gray-500 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            className="dark:bg-slate-600 h-full rounded-md border-transparent bg-transparent py-0 pl-3 pr-7 text-slate-300 border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
           >
             {getCountries().map((c) => (
               <option key={c} value={c}>
@@ -36,13 +37,13 @@ export default function PhoneNumberInput(props: Props) {
             ))}
           </select>
         </div>
-        <input
+        <Input
           value={props.phone}
           onChange={(e) => props.setPhone(e.target.value)}
           type="text"
           name="phone-number"
           id="phone-number"
-          className="block w-full rounded-md border-gray-300 pl-20 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className="pl-20 border-none"
           placeholder="555-987-6543"
         />
       </div>

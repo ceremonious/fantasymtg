@@ -55,7 +55,7 @@ export default function LeagueLayout(props: Props) {
   return (
     <>
       <div className="min-h-full">
-        <Disclosure as="nav" className="bg-indigo-800">
+        <Disclosure as="nav" className="bg-indigo-800 dark:bg-slate-700">
           {({ open }) => (
             <>
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -76,8 +76,8 @@ export default function LeagueLayout(props: Props) {
                             href={item.href}
                             className={classNames(
                               item.current
-                                ? "bg-indigo-900 text-white"
-                                : "text-gray-300 hover:bg-indigo-700 hover:text-white",
+                                ? "bg-indigo-900 text-white dark:bg-slate-800"
+                                : "text-gray-300 hover:bg-indigo-700 dark:hover:bg-slate-700 hover:text-white",
                               "px-3 py-2 rounded-md text-sm font-medium"
                             )}
                             aria-current={item.current ? "page" : undefined}
@@ -93,7 +93,7 @@ export default function LeagueLayout(props: Props) {
                       {/* Profile dropdown */}
                       <Menu as="div" className="relative ml-3">
                         <div>
-                          <Menu.Button className="flex max-w-xs items-center rounded-full bg-indigo-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
+                          <Menu.Button className="flex max-w-xs items-center rounded-full bg-primary-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white focus:dark:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800">
                             <span className="sr-only">Open user menu</span>
                             {props.currMember !== null && (
                               <img
@@ -221,25 +221,25 @@ export default function LeagueLayout(props: Props) {
           )}
         </Disclosure>
 
-        <header className="bg-white shadow-sm">
+        <header className="bg-white dark:bg-slate-700 dark:border-y-2 dark:border-slate-500 shadow-sm">
           <div className="mx-auto max-w-6xl py-4 px-4 sm:px-6 lg:px-8">
             <div className="py-6 md:flex md:items-center md:justify-between">
               <div className="min-w-0 flex-1 h-16">
                 {props.league !== null && (
                   <div className="flex items-center">
                     <img
-                      className="hidden h-16 w-16 rounded-full sm:block"
+                      className="hidden h-16 w-16 rounded-full sm:block dark:border dark:border-gray-500"
                       src={props.league.logo}
                       alt="League logo"
                     />
                     <div>
                       <div className="flex items-center">
                         <img
-                          className="h-16 w-16 rounded-full sm:hidden"
+                          className="h-16 w-16 rounded-full sm:hidden dark:border dark:border-gray-500"
                           src={props.league.logo}
                           alt="League logo"
                         />
-                        <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
+                        <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate sm:leading-9">
                           {props.league.name}
                         </h1>
                       </div>

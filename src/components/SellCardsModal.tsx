@@ -7,6 +7,7 @@ import Button from "./design/Button";
 import XIcon from "./design/XIcon";
 import { trpc } from "../utils/trpc";
 import Spinner from "./design/Spinner";
+import Input from "./design/Input";
 
 interface Props {
   cards: {
@@ -81,15 +82,15 @@ export default function SellCardsModal(props: Props) {
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
-                <div className="bg-indigo-700 py-6 px-4 sm:px-6">
+                <div className="bg-primary-700 py-6 px-4 sm:px-6">
                   <div className="flex items-center justify-between">
-                    <Dialog.Title className="text-lg font-medium text-white">
+                    <Dialog.Title className="text-lg font-medium text-white dark:text-gray-300">
                       Sell Cards
                     </Dialog.Title>
                     <div className="ml-3 flex h-7 items-center">
                       <button
                         type="button"
-                        className="rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                        className="rounded-md bg-primary-700 text-primary-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
                         onClick={() => props.onClose()}
                       >
                         <span className="sr-only">Close panel</span>
@@ -98,14 +99,14 @@ export default function SellCardsModal(props: Props) {
                     </div>
                   </div>
                   <div className="mt-1">
-                    <p className="text-sm text-indigo-300">
+                    <p className="text-sm text-gray-300">
                       Our search & pricing is powered by Scryfall.
                     </p>
                   </div>
                 </div>
 
-                <div>
-                  <div className="mt-6 px-4 sm:px-6">
+                <div className="pt-6 dark:bg-slate-700">
+                  <div className="px-4 sm:px-6">
                     {props.cards.length > 0 && (
                       <ul
                         role="list"
@@ -133,7 +134,7 @@ export default function SellCardsModal(props: Props) {
                                   cardName={card.name}
                                 />
                                 <div className="flex flex-col =">
-                                  <h3 className="font-bold text-gray-800">
+                                  <h3 className="font-bold text-gray-800 dark:text-gray-200">
                                     <a
                                       target="_blank"
                                       href={card.scryfallURI}
@@ -144,18 +145,18 @@ export default function SellCardsModal(props: Props) {
                                       {card.type === "FOIL" ? " (Foil)" : ""}
                                     </a>
                                   </h3>
-                                  <p className="text-sm text-gray-600 line-clamp-2">
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
                                     {card.setName}
                                   </p>
 
                                   <div className="flex flex-col flex-1">
-                                    <p className="font-semibold text-gray-800 mt-4">
+                                    <p className="font-semibold text-gray-800 dark:text-gray-200 mt-4">
                                       Total
                                     </p>
 
-                                    <span className="text-gray-600">
+                                    <span className="text-gray-600 dark:text-gray-400">
                                       {formatPrice(price * card.quantity)}
-                                      <span className="text-gray-400 ml-1">
+                                      <span className="text-gray-400 dark:text-gray-500 ml-1">
                                         (
                                         {pluralize(
                                           card.quantity,
@@ -185,14 +186,14 @@ export default function SellCardsModal(props: Props) {
                                           {isFetching ? (
                                             <div className="flex flex-row items-center space-x-2">
                                               <Spinner />
-                                              <p className="text-gray-500">
+                                              <p className="text-gray-500 dark:text-gray-300">
                                                 Getting updated price...
                                               </p>
                                             </div>
                                           ) : (
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:mt-auto mt-6 gap-4 sm:gap-8">
                                               <div className="flex flex-row space-x-2 items-center">
-                                                <input
+                                                <Input
                                                   autoFocus
                                                   onChange={(e) => {
                                                     setSellingCard((prev) => {
@@ -215,18 +216,20 @@ export default function SellCardsModal(props: Props) {
                                                   type="number"
                                                   name="quantity"
                                                   id="quantity"
-                                                  className="w-[60px] block rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                                  className="w-[60px]"
                                                 />
-                                                <XIcon />
-                                                <span className="text-gray-600">
+                                                <XIcon className="dark:text-gray-400" />
+                                                <span className="text-gray-600 dark:text-gray-400">
                                                   {formatPrice(price)}
                                                 </span>
-                                                <span>=</span>
+                                                <span className="text-gray-600 dark:text-gray-400">
+                                                  =
+                                                </span>
                                                 <span
                                                   className={
                                                     isInvalidQuantity
                                                       ? "text-red-500"
-                                                      : "text-gray-800"
+                                                      : "text-gray-800 dark:text-gray-200"
                                                   }
                                                 >
                                                   {formatPrice(
@@ -241,7 +244,7 @@ export default function SellCardsModal(props: Props) {
                                               {sellCard.isLoading ? (
                                                 <div className="flex flex-row items-center space-x-2">
                                                   <Spinner />
-                                                  <p className="text-gray-500">
+                                                  <p className="text-gray-500 dark:text-gray-300">
                                                     Selling...
                                                   </p>
                                                 </div>
@@ -279,7 +282,7 @@ export default function SellCardsModal(props: Props) {
                                                     onClick={() =>
                                                       setSellingCard(null)
                                                     }
-                                                    className="text-sm text-blue-400 hover:underline hover:text-blue-300"
+                                                    className="text-sm hover:underline text-blue-400 hover:text-blue-300 dark:text-gray-400 dark:hovertext-gray-500"
                                                   >
                                                     Cancel
                                                   </button>

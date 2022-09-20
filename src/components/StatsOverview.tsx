@@ -15,7 +15,7 @@ export default function StatsOverview(props: Props) {
   return (
     <>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <h2 className="text-lg font-medium leading-6 text-gray-900">
+        <h2 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
           Overview
         </h2>
         <div className="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -23,23 +23,23 @@ export default function StatsOverview(props: Props) {
           {cards.map((card) => (
             <div
               key={card.name}
-              className="overflow-hidden rounded-lg bg-white shadow"
+              className="overflow-hidden rounded-lg shadow bg-white dark:bg-slate-700 dark:border dark:border-slate-500"
             >
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <card.icon
-                      className="h-6 w-6 text-gray-400"
+                      className="h-6 w-6 text-gray-400 dark:text-gray-200"
                       aria-hidden="true"
                     />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="truncate text-sm font-medium text-gray-500">
+                      <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-300">
                         {card.name}
                       </dt>
                       <dd>
-                        <div className="text-lg font-medium text-gray-900">
+                        <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
                           {formatPrice(card.amount)}
                         </div>
                       </dd>

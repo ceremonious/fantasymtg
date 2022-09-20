@@ -66,11 +66,10 @@ export default function LeagueHome(props: Props) {
           />
         )}
 
-        <h2 className="mx-auto mt-8 max-w-6xl px-4 text-lg font-medium leading-6 text-gray-900 sm:px-6 lg:px-8">
+        <h2 className="mx-auto mt-8 max-w-6xl px-4 text-lg font-medium leading-6 text-gray-900 dark:text-white sm:px-6 lg:px-8">
           Leaderboard
         </h2>
 
-        {/* Activity list (smallest breakpoint only) */}
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <ul
             role="list"
@@ -80,24 +79,26 @@ export default function LeagueHome(props: Props) {
               <li key={member.id}>
                 <a
                   href="#"
-                  className="block bg-white pl-4 pr-4 py-4 hover:bg-gray-50"
+                  className="block bg-white pl-4 pr-4 py-4 hover:bg-gray-50 rounded-lg dark:bg-slate-700 dark:border dark:border-slate-500"
                 >
                   <span className="flex items-center">
-                    <span className="font-bold text-gray-900">{index + 1}</span>
+                    <span className="font-bold text-gray-900 dark:text-gray-100">
+                      {index + 1}
+                    </span>
                     <img
-                      className="ml-8 h-10 w-10 rounded-full sm:block"
+                      className="ml-8 h-10 w-10 rounded-full sm:block dark:border dark:border-gray-500"
                       src={member.profilePic}
-                      alt=""
+                      alt={member.displayName}
                     />
                     <span className="flex flex-col">
-                      <span className="ml-2 truncate text-gray-700 font-bold">
+                      <span className="ml-2 truncate font-bold text-gray-700 dark:text-gray-100">
                         {member.displayName}
                       </span>
-                      <span className="ml-2 truncate text-gray-500 text-sm">
+                      <span className="ml-2 truncate text-gray-500 dark:text-gray-300 text-sm">
                         {member.maxCardName}
                       </span>
                     </span>
-                    <span className="ml-auto font-medium text-gray-900">
+                    <span className="ml-auto font-medium text-gray-900 dark:text-gray-100">
                       {formatPrice(member.netWorth)}
                     </span>
                     {member.percentChange !== null && (
