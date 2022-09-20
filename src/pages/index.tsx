@@ -2,6 +2,7 @@ import { GetServerSideProps } from "next";
 import React from "react";
 import LoginForm from "../components/LoginForm";
 import SingleCardPage from "../components/SingleCardPage";
+import { prisma } from "../server/db/client";
 import { getAccountIDIfAuthed } from "../server/router/context";
 
 const LandingPage = () => {
@@ -21,19 +22,17 @@ export const getServerSideProps: GetServerSideProps = async (
   const accountID = getAccountIDIfAuthed(context?.req?.cookies?.auth);
 
   if (accountID !== null) {
-    if (prisma !== undefined) {
-      const leagueMember = await prisma.leagueMember.findFirst({
-        where: { accountID },
-        orderBy: { createdAt: "desc" },
-      });
-      if (leagueMember !== null) {
-        return {
-          redirect: {
-            destination: `/league/${leagueMember.leagueID}`,
-            permanent: false,
-          },
-        };
-      }
+    const leagueMember = await prisma.leagueMember.findFirst({
+      where: { accountID },
+      orderBy: { createdAt: "desc" },
+    });
+    if (leagueMember !== null) {
+      return {
+        redirect: {
+          destination: `/league/${leagueMember.leagueID}`,
+          permanent: false,
+        },
+      };
     }
 
     return {

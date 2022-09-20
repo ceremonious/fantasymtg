@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import LoginForm from "../../components/LoginForm";
 import JoinLeagueForm from "../../components/JoinLeagueForm";
 import SingleCardPage from "../../components/SingleCardPage";
+import { prisma } from "../../server/db/client";
 
 type Props =
   | {
@@ -47,28 +48,26 @@ export const getServerSideProps: GetServerSideProps = async (
     typeof context.params?.leagueID === "string" ? context.params.leagueID : "";
   const isAuthed = Boolean(context.req.cookies.auth);
 
-  if (prisma !== undefined) {
-    const league = await prisma.league.findFirst({
-      where: { id: leagueID },
-      include: {
-        leagueMember: { select: { isOwner: true, displayName: true } },
-      },
-    });
-    if (league !== null) {
-      const creatorName =
-        league.leagueMember.find((x) => x.isOwner)?.displayName ?? "";
-      return {
-        props: {
-          foundLeague: true,
-          league: {
-            id: leagueID,
-            name: league.name,
-          },
-          creatorName,
-          isAuthed,
+  const league = await prisma.league.findFirst({
+    where: { id: leagueID },
+    include: {
+      leagueMember: { select: { isOwner: true, displayName: true } },
+    },
+  });
+  if (league !== null) {
+    const creatorName =
+      league.leagueMember.find((x) => x.isOwner)?.displayName ?? "";
+    return {
+      props: {
+        foundLeague: true,
+        league: {
+          id: leagueID,
+          name: league.name,
         },
-      };
-    }
+        creatorName,
+        isAuthed,
+      },
+    };
   }
 
   return {
