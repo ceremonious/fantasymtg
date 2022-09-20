@@ -58,7 +58,7 @@ export default function LeagueHome(props: Props) {
 
   return (
     <>
-      <div className="mt-8">
+      <div className="mt-8 pb-5">
         {currPortfolio !== undefined && (
           <StatsOverview
             netWorth={currPortfolio.netWorth}
