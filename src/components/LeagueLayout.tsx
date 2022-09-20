@@ -23,7 +23,7 @@ interface Props {
     id: string;
     displayName: string;
     profilePic: string;
-    cards: EnrichedPortfolio["cards"];
+    portfolio: EnrichedPortfolio;
   } | null;
   league: (Pick<League, "name"> & { logo: string }) | null;
   children: JSX.Element;
@@ -240,6 +240,7 @@ export default function LeagueLayout(props: Props) {
       </div>
       {props.currMember !== null && (
         <BuyCardsPanel
+          portfolio={props.currMember.portfolio}
           openSellCardsModal={() => setIsSellModalOpen(true)}
           leagueMemberID={props.currMember.id}
           isOpen={isBuyPanelOpen}
@@ -251,7 +252,7 @@ export default function LeagueLayout(props: Props) {
           leagueMemberID={props.currMember.id}
           isOpen={isSellModalOpen}
           onClose={() => setIsSellModalOpen(false)}
-          cards={filterMap(props.currMember.cards, (card) => {
+          cards={filterMap(props.currMember.portfolio.cards, (card) => {
             if (card.card.cardInfo !== null) {
               return {
                 ...card.card.cardInfo,

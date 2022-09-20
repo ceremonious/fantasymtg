@@ -42,7 +42,6 @@ const LeaguePage = (props: Props) => {
   } else if (error?.data?.code === "NOT_FOUND") {
     return <p>Could not find league</p>;
   } else {
-    const leagueMemberID = data.members.find((x) => x.isSelf)?.id ?? null;
     const cardPricesMap = mapArrayOn(data.cards, "id");
     const enrichedPortfolios = new Map(
       Array.from(data.portfolios.entries()).map(([key, portfolio]) => [
@@ -62,7 +61,7 @@ const LeaguePage = (props: Props) => {
           currLeagueMember !== undefined && currPortfolio !== undefined
             ? {
                 ...pick(currLeagueMember, "id", "displayName", "profilePic"),
-                cards: currPortfolio.cards,
+                portfolio: currPortfolio,
               }
             : null
         }

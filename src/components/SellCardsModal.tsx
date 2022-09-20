@@ -121,6 +121,9 @@ export default function SellCardsModal(props: Props) {
                             !isFetching
                               ? upToDatePrice.price
                               : card.price;
+                          const isInvalidQuantity =
+                            sellingCard !== null &&
+                            sellingCard.quantity > card.quantity;
 
                           return (
                             <li key={card.id} className="py-5">
@@ -138,6 +141,7 @@ export default function SellCardsModal(props: Props) {
                                       rel="noreferrer"
                                     >
                                       {card.name}
+                                      {card.type === "FOIL" ? " (Foil)" : ""}
                                     </a>
                                   </h3>
                                   <p className="text-sm text-gray-600 line-clamp-2">
@@ -218,7 +222,13 @@ export default function SellCardsModal(props: Props) {
                                                   {formatPrice(price)}
                                                 </span>
                                                 <span>=</span>
-                                                <span className="text-gray-800">
+                                                <span
+                                                  className={
+                                                    isInvalidQuantity
+                                                      ? "text-red-500"
+                                                      : "text-gray-800"
+                                                  }
+                                                >
                                                   {formatPrice(
                                                     isNaN(sellingCard.quantity)
                                                       ? 0
@@ -257,9 +267,11 @@ export default function SellCardsModal(props: Props) {
                                                         setSellingCard(null);
                                                       }
                                                     }}
-                                                    disabled={isNaN(
-                                                      sellingCard.quantity
-                                                    )}
+                                                    disabled={
+                                                      isNaN(
+                                                        sellingCard.quantity
+                                                      ) || isInvalidQuantity
+                                                    }
                                                   >
                                                     Sell
                                                   </Button>

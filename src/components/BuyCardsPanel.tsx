@@ -12,9 +12,11 @@ import Spinner from "./design/Spinner";
 import Button from "./design/Button";
 import CardImage from "./design/CardImage";
 import XIcon from "./design/XIcon";
+import { EnrichedPortfolio } from "../domain/miscTypes";
 
 interface Props {
   leagueMemberID: string;
+  portfolio: EnrichedPortfolio;
   isOpen: boolean;
   onClose: () => void;
   openSellCardsModal: () => void;
@@ -186,6 +188,26 @@ export default function BuyCardsPanel(props: Props) {
                                   }
                                 }
                                 const buyingPrice = buyingPriceInfo?.price ?? 0;
+                                const numNormalOwned =
+                                  props.portfolio.cards.find(
+                                    (x) =>
+                                      x.card.id === card.id &&
+                                      x.card.type === "NORMAL"
+                                  )?.quantity ?? 0;
+                                const numFoilOwned =
+                                  props.portfolio.cards.find(
+                                    (x) =>
+                                      x.card.id === card.id &&
+                                      x.card.type === "FOIL"
+                                  )?.quantity ?? 0;
+                                const totalPrice =
+                                  buyingCard === null ||
+                                  isNaN(buyingCard.quantity)
+                                    ? 0
+                                    : buyingPrice * buyingCard.quantity;
+                                const isInvalidTotal =
+                                  totalPrice === 0 ||
+                                  totalPrice > props.portfolio.cash;
 
                                 return (
                                   <li key={card.id} className="py-5">
@@ -218,6 +240,11 @@ export default function BuyCardsPanel(props: Props) {
                                               <p className="text-gray-600">
                                                 {formatPrice(card.usd.price)}
                                               </p>
+                                              {numNormalOwned > 0 && (
+                                                <p className="text-green-600 text-sm">
+                                                  {numNormalOwned} owned
+                                                </p>
+                                              )}
                                               {buyingCard?.cardID !==
                                                 card.id && (
                                                 <Button
@@ -245,6 +272,11 @@ export default function BuyCardsPanel(props: Props) {
                                                   card.usdFoil.price
                                                 )}
                                               </p>
+                                              {numFoilOwned > 0 && (
+                                                <p className="text-green-600 text-sm">
+                                                  {numFoilOwned} owned
+                                                </p>
+                                              )}
                                               {buyingCard?.cardID !==
                                                 card.id && (
                                                 <Button
@@ -297,13 +329,14 @@ export default function BuyCardsPanel(props: Props) {
                                                   {formatPrice(buyingPrice)}
                                                 </span>
                                                 <span>=</span>
-                                                <span className="text-gray-800">
-                                                  {formatPrice(
-                                                    isNaN(buyingCard.quantity)
-                                                      ? 0
-                                                      : buyingPrice *
-                                                          buyingCard.quantity
-                                                  )}
+                                                <span
+                                                  className={
+                                                    isInvalidTotal
+                                                      ? "text-red-500"
+                                                      : "text-gray-800"
+                                                  }
+                                                >
+                                                  {formatPrice(totalPrice)}
                                                 </span>
                                               </div>
 
@@ -336,9 +369,7 @@ export default function BuyCardsPanel(props: Props) {
                                                         setBuyingCard(null);
                                                       }
                                                     }}
-                                                    disabled={isNaN(
-                                                      buyingCard.quantity
-                                                    )}
+                                                    disabled={isInvalidTotal}
                                                   >
                                                     Buy
                                                   </Button>

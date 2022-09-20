@@ -131,7 +131,7 @@ export const stocksRouter = createProtectedRouter()
       const league = await ctx.prisma.league.create({
         data: {
           name: input.leagueName,
-          startingAmount: input.startingAmount,
+          startingAmount: input.startingAmount * 100,
           startDate: input.startDate,
           leagueMember: {
             create: [
