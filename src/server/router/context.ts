@@ -65,6 +65,9 @@ export function createProtectedRouter() {
 }
 
 export function getAccountIDIfAuthed(cookie: string | undefined) {
+  if (cookie == undefined) {
+    return null;
+  }
   const JWT_SECRET = process.env.JWT_SECRET ?? "";
   try {
     const data = jwt.verify(cookie, JWT_SECRET);
