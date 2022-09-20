@@ -48,7 +48,7 @@ export default function CreateLeaugeForm() {
             type="text"
             name="leagueName"
             id="leagueName"
-            placeholder="The Charizards"
+            placeholder="Phyrexians"
           />
         </div>
       </div>
@@ -68,7 +68,7 @@ export default function CreateLeaugeForm() {
             type="text"
             name="displayName"
             id="displayName"
-            placeholder="Ash"
+            placeholder="Jace"
           />
         </div>
       </div>

@@ -267,7 +267,7 @@ export const stocksRouter = createProtectedRouter()
           message: "Could not get card price",
         });
       }
-      const price = parsedPrice * 100;
+      const price = Math.round(parsedPrice * 100);
       const parsedScryfallCard = parseScryfallCard(card);
 
       const jwt = signJWT({
@@ -307,14 +307,14 @@ export const stocksRouter = createProtectedRouter()
             ? {
                 ...parsedScryfallCard,
                 cardType: "NORMAL" as const,
-                price: usd * 100,
+                price: Math.round(usd * 100),
               }
             : null;
           const usdFoilJWT = !isNaN(usdFoil)
             ? {
                 ...parsedScryfallCard,
                 cardType: "FOIL" as const,
-                price: usdFoil * 100,
+                price: Math.round(usdFoil * 100),
               }
             : null;
 

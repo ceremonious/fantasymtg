@@ -44,7 +44,7 @@ export default function JoinLeagueForm(props: { leagueID: string }) {
             type="text"
             name="displayName"
             id="displayName"
-            placeholder="Ash"
+            placeholder="Jace"
           />
         </div>
       </div>
