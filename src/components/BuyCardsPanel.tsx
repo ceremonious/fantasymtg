@@ -7,7 +7,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { trpc } from "../utils/trpc";
-import { formatPrice } from "../utils/tsUtil";
+import { focusRef, formatPrice } from "../utils/tsUtil";
 import Spinner from "./design/Spinner";
 import Button from "./design/Button";
 import CardImage from "./design/CardImage";
@@ -45,9 +45,7 @@ export default function BuyCardsPanel(props: Props) {
 
   useEffect(() => {
     if (props.isOpen) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 10);
+      focusRef(inputRef);
     }
   }, [props.isOpen]);
 

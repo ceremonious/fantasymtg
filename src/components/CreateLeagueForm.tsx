@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { trpc } from "../utils/trpc";
+import { focusRef } from "../utils/tsUtil";
 
 export default function CreateLeaugeForm() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function CreateLeaugeForm() {
   const [startingAmount, setStartingAmount] = useState(100);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const createLeague = trpc.useMutation("stocks.createLeague");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,6 +25,10 @@ export default function CreateLeaugeForm() {
     router.push(`/league/${resp.leagueID}`);
   };
 
+  useEffect(() => {
+    focusRef(inputRef);
+  }, []);
+
   return (
     <form className="space-y-6" onSubmit={(e) => onSubmit(e)}>
       <div>
@@ -34,6 +40,7 @@ export default function CreateLeaugeForm() {
         </label>
         <div className="mt-1">
           <input
+            ref={inputRef}
             required
             value={leagueName}
             onChange={(e) => setLeagueName(e.target.value)}

@@ -7,15 +7,12 @@ import Button from "./design/Button";
 import SellCardsModal from "./SellCardsModal";
 import { EnrichedPortfolio } from "../domain/miscTypes";
 import { League } from "@prisma/client";
+import { getBaseUrl } from "../pages/_app";
+import { useRouter } from "next/router";
 
 const navigation = [
   { name: "Home", href: "#", current: true },
   { name: "Transaction History", href: "#", current: false },
-];
-const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Settings", href: "#" },
-  { name: "Sign out", href: "#" },
 ];
 
 interface Props {
@@ -25,13 +22,35 @@ interface Props {
     profilePic: string;
     portfolio: EnrichedPortfolio;
   } | null;
+  otherLeagues: Pick<League, "id" | "name">[];
   league: (Pick<League, "name"> & { logo: string }) | null;
   children: JSX.Element;
 }
 
 export default function LeagueLayout(props: Props) {
+  const router = useRouter();
   const [isBuyPanelOpen, setIsBuyPanelOpen] = useState(false);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+
+  const onSignout = async () => {
+    const url = `${getBaseUrl()}/api/signout`;
+    const resp = await fetch(url, {
+      method: "POST",
+    });
+    const data = await resp.json();
+    if (data.status === "SUCCESS") {
+      router.push("/");
+    }
+  };
+
+  const navItems = [
+    ...props.otherLeagues.map((x) => ({
+      name: x.name,
+      href: `/league/${x.id}`,
+    })),
+    { name: "Create New League", href: `/league/create` },
+    { name: "Sign Out", href: "#signout" },
+  ];
 
   return (
     <>
@@ -95,19 +114,31 @@ export default function LeagueLayout(props: Props) {
                           leaveTo="transform opacity-0 scale-95"
                         >
                           <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            {userNavigation.map((item) => (
+                            {navItems.map((item) => (
                               <Menu.Item key={item.name}>
-                                {({ active }) => (
-                                  <a
-                                    href={item.href}
-                                    className={classNames(
-                                      active ? "bg-gray-100" : "",
-                                      "block px-4 py-2 text-sm text-gray-700"
-                                    )}
-                                  >
-                                    {item.name}
-                                  </a>
-                                )}
+                                {({ active }) =>
+                                  item.href === "#signout" ? (
+                                    <button
+                                      onClick={() => onSignout()}
+                                      className={classNames(
+                                        active ? "bg-gray-100" : "",
+                                        "text-left w-full block px-4 py-2 text-sm text-gray-700"
+                                      )}
+                                    >
+                                      {item.name}
+                                    </button>
+                                  ) : (
+                                    <a
+                                      href={item.href}
+                                      className={classNames(
+                                        active ? "bg-gray-100" : "",
+                                        "block px-4 py-2 text-sm text-gray-700"
+                                      )}
+                                    >
+                                      {item.name}
+                                    </a>
+                                  )
+                                }
                               </Menu.Item>
                             ))}
                           </Menu.Items>
@@ -173,7 +204,7 @@ export default function LeagueLayout(props: Props) {
                   )}
 
                   <div className="mt-3 space-y-1 px-2">
-                    {userNavigation.map((item) => (
+                    {navItems.map((item) => (
                       <Disclosure.Button
                         key={item.name}
                         as="a"
@@ -193,7 +224,7 @@ export default function LeagueLayout(props: Props) {
         <header className="bg-white shadow-sm">
           <div className="mx-auto max-w-6xl py-4 px-4 sm:px-6 lg:px-8">
             <div className="py-6 md:flex md:items-center md:justify-between">
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 h-16">
                 {props.league !== null && (
                   <div className="flex items-center">
                     <img

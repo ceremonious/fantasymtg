@@ -1,9 +1,12 @@
+import { RefObject } from "react";
+
 interface Props {
   code: string;
   setCode: (val: string) => void;
   isPhoneValid: boolean;
   stage: "INIT" | "SENDING" | "SENT";
   onSubmit: () => void;
+  innerRef?: RefObject<HTMLInputElement>;
 }
 
 export default function LoginCodeInput(props: Props) {
@@ -21,6 +24,7 @@ export default function LoginCodeInput(props: Props) {
       <div className="mt-1 flex rounded-md shadow-sm">
         <div className="relative flex flex-grow items-stretch focus-within:z-10">
           <input
+            ref={props.innerRef}
             maxLength={6}
             onChange={(e) => props.setCode(e.target.value)}
             value={props.code}

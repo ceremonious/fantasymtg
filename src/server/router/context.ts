@@ -63,3 +63,16 @@ export function createProtectedRouter() {
     });
   });
 }
+
+export function getAccountIDIfAuthed(cookie: string | undefined) {
+  const JWT_SECRET = process.env.JWT_SECRET ?? "";
+  try {
+    const data = jwt.verify(cookie, JWT_SECRET);
+    if (typeof data === "string") {
+      return null;
+    }
+    return data.accountID;
+  } catch (e) {
+    return null;
+  }
+}

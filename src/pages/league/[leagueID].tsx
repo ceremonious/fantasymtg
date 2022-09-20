@@ -1,5 +1,6 @@
 import { GetServerSideProps } from "next";
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
 import Spinner from "../../components/design/Spinner";
 import LeagueHome from "../../components/LeagueHome";
 import LeagueLayout from "../../components/LeagueLayout";
@@ -14,23 +15,34 @@ interface Props {
 }
 
 const LeaguePage = (props: Props) => {
+  const router = useRouter();
   const { data, isLoading, error } = trpc.useQuery(
     ["stocks.leagueHome", { leagueID: props.leagueID }],
     {
-      retry: (_, error) => {
-        if (error.data?.code === "NOT_FOUND") {
+      retry: (numRetries, error) => {
+        if (
+          error.data?.code === "NOT_FOUND" ||
+          error.data?.code === "UNAUTHORIZED"
+        ) {
           return false;
         } else {
-          return true;
+          return numRetries < 3;
         }
       },
     }
   );
 
+  const isUnauthed = error?.data?.code === "UNAUTHORIZED";
+  useEffect(() => {
+    if (isUnauthed) {
+      router.push("/");
+    }
+  }, [isUnauthed, router]);
+
   if (data === undefined) {
     if (isLoading) {
       return (
-        <LeagueLayout currMember={null} league={null}>
+        <LeagueLayout otherLeagues={[]} currMember={null} league={null}>
           <div className="w-full flex justify-center">
             <Spinner className="mt-16 h-16 w-16" />
           </div>
@@ -57,6 +69,7 @@ const LeaguePage = (props: Props) => {
 
     return (
       <LeagueLayout
+        otherLeagues={data.otherLeagues}
         currMember={
           currLeagueMember !== undefined && currPortfolio !== undefined
             ? {

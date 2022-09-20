@@ -155,15 +155,20 @@ export const stocksRouter = createProtectedRouter()
       leagueID: z.string(),
     }),
     async resolve({ input, ctx }): Promise<GetLeagueHomePage> {
-      const [league, leagueMembers, transactions] = await Promise.all([
-        ctx.prisma.league.findFirst({ where: { id: input.leagueID } }),
-        ctx.prisma.leagueMember.findMany({
-          where: { leagueID: input.leagueID },
-        }),
-        ctx.prisma.transaction.findMany({
-          where: { leagueID: input.leagueID },
-        }),
-      ]);
+      const [league, leagueMembers, transactions, otherLeagues] =
+        await Promise.all([
+          ctx.prisma.league.findFirst({ where: { id: input.leagueID } }),
+          ctx.prisma.leagueMember.findMany({
+            where: { leagueID: input.leagueID },
+          }),
+          ctx.prisma.transaction.findMany({
+            where: { leagueID: input.leagueID },
+          }),
+          ctx.prisma.leagueMember.findMany({
+            where: { accountID: ctx.accountID },
+            select: { leauge: { select: { id: true, name: true } } },
+          }),
+        ]);
       if (league === null) {
         throw new trpc.TRPCError({
           code: "NOT_FOUND",
@@ -208,6 +213,9 @@ export const stocksRouter = createProtectedRouter()
         portfolios,
         netWorthOverTime,
         cards: cardsWithPrices,
+        otherLeagues: otherLeagues
+          .map((x) => x.leauge)
+          .filter((x) => x.id !== input.leagueID),
       };
     },
   })

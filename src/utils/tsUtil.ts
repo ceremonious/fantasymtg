@@ -83,3 +83,13 @@ export function getPercentChange(oldVal: number, newVal: number) {
 export function pluralize(num: number, singular: string, plural: string) {
   return num === 1 ? `${num} ${singular}` : `${num} ${plural}`;
 }
+
+export function focusRef(
+  ref: React.MutableRefObject<HTMLInputElement | null> | null
+) {
+  setTimeout(() => {
+    if (ref !== null && ref.current !== null) {
+      ref.current.focus();
+    }
+  }, 10);
+}

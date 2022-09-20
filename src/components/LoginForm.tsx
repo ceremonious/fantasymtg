@@ -3,11 +3,12 @@ import {
   isValidPhoneNumber,
   parsePhoneNumber,
 } from "libphonenumber-js";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import LoginCodeInput from "../components/LoginCodeInput";
 import PhoneNumberInput from "../components/PhoneNumberInput";
 import { getBaseUrl } from "../pages/_app";
 import { supabase } from "../utils/supabaseClient";
+import { focusRef } from "../utils/tsUtil";
 
 type CodeStage = "INIT" | "SENDING" | "SENT";
 
@@ -21,6 +22,7 @@ export default function Login(props: Props) {
   const [codeStage, setCodeStage] = useState<CodeStage>("INIT");
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const codeInputRef = useRef<HTMLInputElement>(null);
 
   const canSubmit = codeStage === "SENT" && code.length === 6;
 
@@ -59,6 +61,7 @@ export default function Login(props: Props) {
       />
 
       <LoginCodeInput
+        innerRef={codeInputRef}
         isPhoneValid={phone.length > 0}
         code={code}
         setCode={setCode}
@@ -77,6 +80,7 @@ export default function Login(props: Props) {
           });
           if (error === null) {
             setCodeStage("SENT");
+            focusRef(codeInputRef);
           } else {
             setCodeStage("INIT");
             console.error(error);
