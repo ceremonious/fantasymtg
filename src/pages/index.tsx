@@ -1,4 +1,5 @@
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 import React from "react";
 import LoginForm from "../components/LoginForm";
 import SingleCardPage from "../components/SingleCardPage";
@@ -7,9 +8,15 @@ import { getAccountIDIfAuthed } from "../server/router/context";
 
 const LandingPage = () => {
   return (
-    <SingleCardPage header="Log In">
-      <LoginForm onSuccess={() => window.location.reload()} />
-    </SingleCardPage>
+    <>
+      <Head>
+        <title>Fantasy MTG</title>
+        <meta property="og:title" content="Fantasy MTG" key="title" />
+      </Head>
+      <SingleCardPage header="Log In">
+        <LoginForm onSuccess={() => window.location.reload()} />
+      </SingleCardPage>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 import React, { useState } from "react";
 import CreateLeagueForm from "../../components/CreateLeagueForm";
 import LoginForm from "../../components/LoginForm";
@@ -12,13 +13,19 @@ const CreateLeaguePage = (props: Props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   return (
-    <SingleCardPage header="Create League">
-      {props.isAuthed || isLoggedIn ? (
-        <CreateLeagueForm />
-      ) : (
-        <LoginForm onSuccess={() => setIsLoggedIn(true)} />
-      )}
-    </SingleCardPage>
+    <>
+      <Head>
+        <title>Create League</title>
+        <meta property="og:title" content="Create League" key="title" />
+      </Head>
+      <SingleCardPage header="Create League">
+        {props.isAuthed || isLoggedIn ? (
+          <CreateLeagueForm />
+        ) : (
+          <LoginForm onSuccess={() => setIsLoggedIn(true)} />
+        )}
+      </SingleCardPage>
+    </>
   );
 };
 

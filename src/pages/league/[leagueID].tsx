@@ -1,4 +1,5 @@
 import { GetServerSideProps } from "next";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
 import Spinner from "../../components/design/Spinner";
@@ -14,7 +15,7 @@ interface Props {
   creatorName: string;
 }
 
-const LeaguePage = (props: Props) => {
+function LeaguePageComponent(props: Props) {
   const router = useRouter();
   const { data, isLoading, error } = trpc.useQuery(
     ["stocks.leagueHome", { leagueID: props.leagueID }],
@@ -68,23 +69,41 @@ const LeaguePage = (props: Props) => {
         : undefined;
 
     return (
-      <LeagueLayout
-        otherLeagues={data.otherLeagues}
-        currMember={
-          currLeagueMember !== undefined && currPortfolio !== undefined
-            ? {
-                ...pick(currLeagueMember, "id", "displayName", "profilePic"),
-                portfolio: currPortfolio,
-              }
-            : null
-        }
-        league={data.league}
-      >
-        <LeagueHome pageData={data} enrichedPortfolios={enrichedPortfolios} />
-      </LeagueLayout>
+      <>
+        <Head>
+          <title>{data.league.name}</title>
+          <meta property="og:title" content={data.league.name} key="title" />
+        </Head>
+        <LeagueLayout
+          otherLeagues={data.otherLeagues}
+          currMember={
+            currLeagueMember !== undefined && currPortfolio !== undefined
+              ? {
+                  ...pick(currLeagueMember, "id", "displayName", "profilePic"),
+                  portfolio: currPortfolio,
+                }
+              : null
+          }
+          league={data.league}
+        >
+          <LeagueHome pageData={data} enrichedPortfolios={enrichedPortfolios} />
+        </LeagueLayout>
+      </>
     );
   }
-};
+}
+
+function LeaguePage(props: Props) {
+  return (
+    <>
+      <Head>
+        <title>Fantasy MTG</title>
+        <meta property="og:title" content="Fantasy MTG" key="title" />
+      </Head>
+      <LeaguePageComponent {...props} />
+    </>
+  );
+}
 
 export const getServerSideProps: GetServerSideProps = async (
   context

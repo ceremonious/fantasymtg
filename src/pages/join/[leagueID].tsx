@@ -4,6 +4,7 @@ import LoginForm from "../../components/LoginForm";
 import JoinLeagueForm from "../../components/JoinLeagueForm";
 import SingleCardPage from "../../components/SingleCardPage";
 import { prisma } from "../../server/db/client";
+import Head from "next/head";
 
 type Props =
   | {
@@ -28,16 +29,26 @@ const JoinLeaguePage = (props: Props) => {
   }
 
   return (
-    <SingleCardPage
-      header={`Join ${props.league.name}`}
-      helpText={`Created by ${props.creatorName}`}
-    >
-      {props.isAuthed || isLoggedIn ? (
-        <JoinLeagueForm leagueID={props.league.id} />
-      ) : (
-        <LoginForm onSuccess={() => setIsLoggedIn(true)} />
-      )}
-    </SingleCardPage>
+    <>
+      <Head>
+        <title>Join {props.league.name}</title>
+        <meta
+          property="og:title"
+          content={`Join ${props.league.name}`}
+          key="title"
+        />
+      </Head>
+      <SingleCardPage
+        header={`Join ${props.league.name}`}
+        helpText={`Created by ${props.creatorName}`}
+      >
+        {props.isAuthed || isLoggedIn ? (
+          <JoinLeagueForm leagueID={props.league.id} />
+        ) : (
+          <LoginForm onSuccess={() => setIsLoggedIn(true)} />
+        )}
+      </SingleCardPage>
+    </>
   );
 };
 
