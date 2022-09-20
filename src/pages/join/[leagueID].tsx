@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
-import { useRouter } from "next/router";
-import React from "react";
+import React, { useState } from "react";
 import LoginForm from "../../components/LoginForm";
+import JoinLeagueForm from "../../components/JoinLeagueForm";
 
 type Props =
   | {
@@ -14,10 +14,11 @@ type Props =
         name: string;
       };
       creatorName: string;
+      isAuthed: boolean;
     };
 
 const JoinLeaguePage = (props: Props) => {
-  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   if (!props.foundLeague) {
     //TODO: style
@@ -42,9 +43,11 @@ const JoinLeaguePage = (props: Props) => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <LoginForm
-            onSuccess={() => router.push(`/league/${props.league.id}`)}
-          />
+          {props.isAuthed || isLoggedIn ? (
+            <JoinLeagueForm leagueID={props.league.id} />
+          ) : (
+            <LoginForm onSuccess={() => setIsLoggedIn(true)} />
+          )}
         </div>
       </div>
     </div>
@@ -56,6 +59,7 @@ export const getServerSideProps: GetServerSideProps = async (
 ): Promise<{ props: Props }> => {
   const leagueID =
     typeof context.params?.leagueID === "string" ? context.params.leagueID : "";
+  const isAuthed = Boolean(context.req.cookies.auth);
 
   if (prisma !== undefined) {
     const league = await prisma.league.findFirst({
@@ -75,6 +79,7 @@ export const getServerSideProps: GetServerSideProps = async (
             name: league.name,
           },
           creatorName,
+          isAuthed,
         },
       };
     }

@@ -150,6 +150,35 @@ export const stocksRouter = createProtectedRouter()
       };
     },
   })
+  .mutation("joinLeague", {
+    input: z.object({
+      leagueID: z.string(),
+      displayName: z.string(),
+    }),
+    async resolve({ input, ctx }) {
+      const existingMember = await ctx.prisma.leagueMember.findFirst({
+        where: { leagueID: input.leagueID, accountID: ctx.accountID },
+      });
+      if (existingMember !== null) {
+        return {
+          status: "SUCCESS",
+        };
+      }
+
+      await ctx.prisma.leagueMember.create({
+        data: {
+          displayName: input.displayName,
+          accountID: ctx.accountID,
+          isOwner: false,
+          leagueID: input.leagueID,
+        },
+      });
+
+      return {
+        status: "SUCCESS",
+      };
+    },
+  })
   .query("leagueHome", {
     input: z.object({
       leagueID: z.string(),
