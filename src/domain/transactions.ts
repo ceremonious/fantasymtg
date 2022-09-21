@@ -112,9 +112,13 @@ function getCardPrice(
     const cardPrice = validPrices[i];
     if (cardPrice !== undefined && cardPrice.cardID === card.id) {
       if (card.type === "NORMAL") {
-        return cardPrice.amountNormal;
+        if (cardPrice.amountNormal !== null) {
+          return cardPrice.amountNormal;
+        }
       } else if (card.type === "FOIL") {
-        return cardPrice.amountFoil;
+        if (cardPrice.amountFoil !== null) {
+          return cardPrice.amountFoil;
+        }
       } else {
         assertNever(card.type);
       }
@@ -221,8 +225,8 @@ export function getCardsWithPrices(
       const currVal = priceMap.get(cardPrice.cardID);
       if (currVal === undefined) {
         priceMap.set(cardPrice.cardID, {
-          amountFoil: cardPrice.amountFoil,
-          amountNormal: cardPrice.amountNormal,
+          amountFoil: cardPrice.amountFoil ?? undefined,
+          amountNormal: cardPrice.amountNormal ?? undefined,
         });
       }
     }

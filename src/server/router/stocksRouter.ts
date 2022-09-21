@@ -15,6 +15,7 @@ import { Prisma, PrismaClient, Transaction } from "@prisma/client";
 import { GetLeagueHomePage } from "../../domain/apiTypes";
 import * as trpc from "@trpc/server";
 import { getRandomProfileURL } from "../../utils/pfp";
+import { parseScryfallCard } from "../../domain/scryfall";
 
 type IPrismaClient = PrismaClient<
   Prisma.PrismaClientOptions,
@@ -24,24 +25,6 @@ type IPrismaClient = PrismaClient<
 
 function convertTransactions(transactions: Transaction[]) {
   return transactions as ITransaction[];
-}
-
-function parseScryfallCard(scryfallCard: any) {
-  const cardID = scryfallCard.id as string;
-  const cardName = scryfallCard.name as string;
-  const setName = scryfallCard.set_name as string;
-  let imageURIs = scryfallCard.image_uris;
-  if (imageURIs === undefined && scryfallCard.card_faces !== undefined) {
-    imageURIs = scryfallCard.card_faces[0]?.image_uris;
-  }
-
-  return {
-    id: cardID,
-    name: cardName,
-    setName,
-    scryfallURI: scryfallCard.scryfall_uri as string,
-    imageURI: imageURIs ? (imageURIs.normal as string) : null,
-  };
 }
 
 async function authenticateLeagueMember(
@@ -258,20 +241,20 @@ export const stocksRouter = createProtectedRouter()
       const resp = await fetch(url);
       const card = await resp.json();
 
-      const rawPrice =
-        input.cardType === "NORMAL" ? card.prices.usd : card.prices.usd_foil;
-      const parsedPrice = parseFloat(rawPrice);
-      if (isNaN(parsedPrice)) {
+      const parsedCard = parseScryfallCard(card);
+      const price =
+        input.cardType === "NORMAL"
+          ? parsedCard.priceNormal
+          : parsedCard.priceFoil;
+      if (price === null) {
         throw new trpc.TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Could not get card price",
         });
       }
-      const price = Math.round(parsedPrice * 100);
-      const parsedScryfallCard = parseScryfallCard(card);
 
       const jwt = signJWT({
-        ...parsedScryfallCard,
+        ...parsedCard,
         cardType: input.cardType,
         price,
       });
@@ -296,30 +279,30 @@ export const stocksRouter = createProtectedRouter()
       }
 
       const cards = filterMap(data.data, (card: any) => {
-        const usd = parseFloat(card.prices?.usd);
-        const usdFoil = parseFloat(card.prices?.usd_foil);
-        const hasPrice = !isNaN(usd) || !isNaN(usdFoil);
+        const parsedCard = parseScryfallCard(card);
+        const hasPrice =
+          parsedCard.priceNormal !== null || parsedCard.priceFoil !== null;
 
         if (!card.digital && hasPrice) {
-          const parsedScryfallCard = parseScryfallCard(card);
-
-          const usdJWT = !isNaN(usd)
-            ? {
-                ...parsedScryfallCard,
-                cardType: "NORMAL" as const,
-                price: Math.round(usd * 100),
-              }
-            : null;
-          const usdFoilJWT = !isNaN(usdFoil)
-            ? {
-                ...parsedScryfallCard,
-                cardType: "FOIL" as const,
-                price: Math.round(usdFoil * 100),
-              }
-            : null;
+          const usdJWT =
+            parsedCard.priceNormal !== null
+              ? {
+                  ...parsedCard,
+                  cardType: "NORMAL" as const,
+                  price: parsedCard.priceNormal,
+                }
+              : null;
+          const usdFoilJWT =
+            parsedCard.priceFoil !== null
+              ? {
+                  ...parsedCard,
+                  cardType: "FOIL" as const,
+                  price: parsedCard.priceFoil,
+                }
+              : null;
 
           return {
-            ...parsedScryfallCard,
+            ...parsedCard,
             usd:
               usdJWT !== null
                 ? { price: usdJWT.price, jwt: signJWT(usdJWT) }

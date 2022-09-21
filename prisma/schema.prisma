@@ -45,8 +45,8 @@ model Card {
 model CardPrice {
     cardID String 
     timestamp DateTime
-    amountNormal Int
-    amountFoil Int
+    amountNormal Int?
+    amountFoil Int?
 
     card      Card @relation(fields: [cardID], references: [id])
     @@unique([cardID, timestamp])
